@@ -30,6 +30,7 @@ class Game final {
   SDL_Window* getWindow();
   int getWindowHeight() const;
   int getWindowWidth() const;
+  int getFPS() const;
 
   Windows window_;
   Renderer renderer_;

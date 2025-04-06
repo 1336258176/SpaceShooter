@@ -31,4 +31,16 @@ struct PlayerBullet {
   }
 };
 
+struct Enemy {
+  SDL_Texture* texture = nullptr;
+  SDL_FPoint pos{0.f, 0.f};
+  int width = 0;
+  int height = 0;
+  int speed = 300;
+
+  ~Enemy() {
+    if (!texture) SDL_DestroyTexture(texture);
+  }
+};
+
 #endif  // ENTITY_HPP__

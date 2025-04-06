@@ -7,6 +7,7 @@
 #include <SDL_ttf.h>
 
 #include <list>
+#include <random>
 #include <memory>
 #include <string>
 

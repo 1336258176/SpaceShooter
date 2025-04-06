@@ -16,14 +16,19 @@ class GameScene : public SceneBase {
   void handleEvent(const SDL_Event& event) override;
   void quit() override;
   void keyboardControl(float deltaTime);
+  float getRandomNum();
 
  private:
   bool isDead = false;
+  std::mt19937 gen_;
+  std::uniform_real_distribution<float> dis_;
 
   Player player_;
+  Enemy enemy_tmp_;
   PlayerBullet player_bullet_tmp_;
 
   std::list<PlayerBullet*> player_bullets_;
+  std::list<Enemy*> enemies_;
 };
 
 #endif  // SCENEBASE_HPP__

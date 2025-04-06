@@ -70,6 +70,8 @@ int Game::getWindowHeight() const { return window_.WindowsHeight; }
 
 int Game::getWindowWidth() const { return window_.WindowsWidth; }
 
+int Game::getFPS() const { return static_cast<int>(FPS); }
+
 void Game::run() {
   while (!shouldColse) {
     Uint32 startTime = SDL_GetTicks();
