@@ -8,7 +8,7 @@
 class GameScene : public SceneBase {
  public:
   GameScene() = default;
-  ~GameScene() override = default;
+  ~GameScene() override;
 
   void init() override;
   void update(float deltaTime) override;
@@ -21,6 +21,9 @@ class GameScene : public SceneBase {
   bool isDead = false;
 
   Player player_;
+  PlayerBullet player_bullet_tmp_;
+
+  std::list<PlayerBullet*> player_bullets_;
 };
 
 #endif  // SCENEBASE_HPP__

@@ -39,8 +39,8 @@ class Game final {
 
   bool shouldColse = false;
   const Uint32 FPS = 60;
-  const Uint32 frameTime_ = 1000 / FPS;
-  float deltaTime_ = 0.f;
+  const Uint32 frameTime_ = 1000 / FPS;  // ms
+  float deltaTime_ = 0.f;  // The time(s) difference between this frame and the previous frame
   std::unique_ptr<SceneBase> currentScene_;
   static std::unique_ptr<Game> instance_;
 };
