@@ -1,0 +1,23 @@
+Language: Cpp
+BasedOnStyle: Google
+
+UseTab: Never
+TabWidth: 2
+ColumnLimit: 100
+
+AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Right
+AlignOperands: Align
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortLambdasOnASingleLine: Empty
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: None
+BreakBeforeConceptDeclarations: Always
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterComma
+
+IncludeBlocks: Regroup      # 头文件分组排序
+SortIncludes: true          # 自动排序头文件
