@@ -14,20 +14,20 @@ class Game final {
   enum GameState { Start, Running, GameOver };
   GameState state;
 
-  Game& operator=(const Game&) = delete;
-  Game(const Game&) = delete;
+  Game &operator=(const Game &) = delete;
+  Game(const Game &) = delete;
 
   void init();
   void quit();
-  static Game& getInstance();
+  static Game &getInstance();
   void run();
-  void handleEvent(SDL_Event& event);
+  void handleEvent(SDL_Event &event);
   void update(float deltaTime);
   void present();
   void changeScene(GameState next_game_state);
 
-  SDL_Renderer* getRenderer();
-  SDL_Window* getWindow();
+  SDL_Renderer *getRenderer();
+  SDL_Window *getWindow();
   int getWindowHeight() const;
   int getWindowWidth() const;
   int getFPS() const;
@@ -36,7 +36,7 @@ class Game final {
   Renderer renderer_;
 
  private:
-  Game(Windows&& window, Renderer&& renderer);
+  Game(Windows &&window, Renderer &&renderer);
 
   bool shouldColse = false;
   const Uint32 FPS = 60;

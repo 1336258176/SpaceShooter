@@ -3,7 +3,7 @@
 
 #include "pch.hpp"
 
-auto DestroyWindows = [](SDL_Window* windows) { SDL_DestroyWindow(windows); };
+inline auto DestroyWindows = [](SDL_Window* windows) { SDL_DestroyWindow(windows); };
 
 class Windows final {
  public:

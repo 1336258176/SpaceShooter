@@ -2,8 +2,8 @@
 
 std::unique_ptr<Game> Game::instance_ = nullptr;
 
-Game::Game(Windows&& window, Renderer&& renderer)
-    : window_(std::move(window)), renderer_(std::move(renderer)) {}
+Game::Game(Windows&& window, Renderer&& renderer) :
+    window_(std::move(window)), renderer_(std::move(renderer)) {}
 
 void Game::init() {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {

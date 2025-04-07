@@ -3,7 +3,9 @@
 
 #include "windows.hpp"
 
-auto DestroyRenderer = [](SDL_Renderer* renderer) { SDL_DestroyRenderer(renderer); };
+inline auto DestroyRenderer = [](SDL_Renderer* renderer) {
+  SDL_DestroyRenderer(renderer);
+};
 
 class Renderer final {
  public:
@@ -13,8 +15,16 @@ class Renderer final {
   void clearScreen();
   void present();
   void setColor(const SDL_Color& color);
-  void renderTexture(SDL_Texture* texture, const SDL_FPoint& pos, int w, int h,
+  void renderTexture(SDL_Texture* texture,
+                     const SDL_FPoint& pos,
+                     int w,
+                     int h,
                      SDL_Rect* src = NULL);
+  void renderTextureEx(SDL_Texture* texture,
+                       const SDL_Rect& dst,
+                       double angle,
+                       const SDL_Point* center = NULL,
+                       const SDL_RendererFlip filp = SDL_FLIP_NONE);
 
  private:
   std::unique_ptr<SDL_Renderer, decltype(DestroyRenderer)> renderer_;

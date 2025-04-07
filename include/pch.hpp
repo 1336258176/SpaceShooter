@@ -6,9 +6,10 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
+#include <cmath>
 #include <list>
-#include <random>
 #include <memory>
+#include <random>
 #include <string>
 
 #endif  // PRECOMPILE_HPP__
