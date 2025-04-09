@@ -8,22 +8,22 @@ void GameScene::init() {
   dis_ = std::uniform_real_distribution<float>(0.f, 1.f);
 
   // player
-  player_.texture = IMG_LoadTexture(game.getRenderer(), PlayerTexturePath);
+  player_.setTexture(IMG_LoadTexture(game.getRenderer(), PlayerTexturePath));
   if (!player_.texture) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load player texture error.");
   }
-  SDL_QueryTexture(player_.texture, NULL, NULL, &player_.width, &player_.height);
+  SDL_QueryTexture(player_.getTexture(), NULL, NULL, &player_.width, &player_.height);
   player_.width /= 4;
   player_.height /= 4;
   player_.pos.x = static_cast<float>(game.getWindowWidth() / 2.0 - player_.width / 2.0);
   player_.pos.y = static_cast<float>(game.getWindowHeight() - player_.height);
 
   // player bullet
-  player_bullet_tmp_.texture = IMG_LoadTexture(game.getRenderer(), PlayerBulletTexturePath);
+  player_bullet_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), PlayerBulletTexturePath));
   if (!player_bullet_tmp_.texture) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load player bullet texture error.");
   }
-  SDL_QueryTexture(player_bullet_tmp_.texture,
+  SDL_QueryTexture(player_bullet_tmp_.getTexture(),
                    NULL,
                    NULL,
                    &player_bullet_tmp_.width,
@@ -32,26 +32,39 @@ void GameScene::init() {
   player_bullet_tmp_.height /= 4;
 
   // enemy
-  enemy_tmp_.texture = IMG_LoadTexture(game.getRenderer(), EnemyTexturePath);
+  enemy_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), EnemyTexturePath));
   if (!enemy_tmp_.texture) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load enemy texture error.");
   }
-  SDL_QueryTexture(enemy_tmp_.texture, NULL, NULL, &enemy_tmp_.width, &enemy_tmp_.height);
+  SDL_QueryTexture(enemy_tmp_.getTexture(), NULL, NULL, &enemy_tmp_.width, &enemy_tmp_.height);
   enemy_tmp_.width /= 4;
   enemy_tmp_.height /= 4;
 
   // enemy bullet
-  enemy_bullet_tmp_.texture = IMG_LoadTexture(game.getRenderer(), EnemyBulletTexturePath);
+  enemy_bullet_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), EnemyBulletTexturePath));
   if (!enemy_bullet_tmp_.texture) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load enemy bullet texture error.");
   }
-  SDL_QueryTexture(enemy_bullet_tmp_.texture,
+  SDL_QueryTexture(enemy_bullet_tmp_.getTexture(),
                    NULL,
                    NULL,
                    &enemy_bullet_tmp_.width,
                    &enemy_bullet_tmp_.height);
   enemy_bullet_tmp_.width /= 4;
   enemy_bullet_tmp_.height /= 4;
+
+  // explosion
+  explosion_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), ExplosionTexturePath));
+  if (!explosion_tmp_.texture) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load explosion texture error.");
+  }
+  SDL_QueryTexture(explosion_tmp_.getTexture(),
+                   NULL,
+                   NULL,
+                   &explosion_tmp_.width,
+                   &explosion_tmp_.height);
+  explosion_tmp_.totalFrame = explosion_tmp_.width / explosion_tmp_.height;
+  explosion_tmp_.width = explosion_tmp_.height;
 }
 
 void GameScene::update(float deltaTime) {
@@ -61,25 +74,35 @@ void GameScene::update(float deltaTime) {
   spawnEnemy();
   updateEnemies(deltaTime);
   updateEnemyBullets(deltaTime);
+
+  updateExplosions();
 }
 
 void GameScene::render() {
   for (const auto& bullet : player_bullets_) {
-    game.renderer_.renderTexture(bullet->texture, bullet->pos, bullet->width, bullet->height);
+    game.renderer_.renderTexture(bullet.getTexture(), bullet.pos, bullet.width, bullet.height);
   }
   for (const auto& bullet : enemy_bullets_) {
-    double angle = atan2(bullet->direction_vec.y, bullet->direction_vec.x) * 180.0 / M_PI - 90.0;
-    SDL_Rect dst = {static_cast<int>(bullet->pos.x),
-                    static_cast<int>(bullet->pos.y),
-                    bullet->width,
-                    bullet->height};
-    game.renderer_.renderTextureEx(bullet->texture, dst, angle);
+    double angle = atan2(bullet.direction_vec.y, bullet.direction_vec.x) * 180.0 / M_PI - 90.0;
+    SDL_Rect dst = {static_cast<int>(bullet.pos.x),
+                    static_cast<int>(bullet.pos.y),
+                    bullet.width,
+                    bullet.height};
+    game.renderer_.renderTextureEx(bullet.getTexture(), dst, angle);
   }
   if (!isDead) {
-    game.renderer_.renderTexture(player_.texture, player_.pos, player_.width, player_.height);
+    game.renderer_.renderTexture(player_.getTexture(), player_.pos, player_.width, player_.height);
   }
   for (const auto& enemy : enemies_) {
-    game.renderer_.renderTexture(enemy->texture, enemy->pos, enemy->width, enemy->height);
+    game.renderer_.renderTexture(enemy.getTexture(), enemy.pos, enemy.width, enemy.height);
+  }
+  for (auto& explosion : explosions_) {
+    SDL_Rect src = {explosion.currentFrame * explosion.width, 0, explosion.width, explosion.height};
+    game.renderer_.renderTexture(explosion.getTexture(),
+                                 explosion.pos,
+                                 explosion.width,
+                                 explosion.height,
+                                 &src);
   }
 }
 
@@ -87,17 +110,7 @@ GameScene::~GameScene() { quit(); }
 
 void GameScene::handleEvent(const SDL_Event& event) {}
 
-void GameScene::quit() {
-  for (auto& bullet : player_bullets_) {
-    delete bullet;
-  }
-  for (auto& enemy : enemies_) {
-    delete enemy;
-  }
-  for (auto& bullet : enemy_bullets_) {
-    delete bullet;
-  }
-}
+void GameScene::quit() {}
 
 void GameScene::keyboardControl(float deltaTime) {
   if (isDead) return;
@@ -139,10 +152,10 @@ SDL_FPoint GameScene::getDirectionVec(const Enemy& enemy) {
 void GameScene::playerShoot() {
   auto currentTime = SDL_GetTicks();
   if (currentTime - player_.last_shoot_stamp > player_.bullet_cooldown) {
-    auto tmp = new PlayerBullet(player_bullet_tmp_);
-    tmp->pos.x = player_.pos.x + player_.width / 2.0f - player_bullet_tmp_.width / 2.0f;
-    tmp->pos.y = player_.pos.y;
-    player_bullets_.push_back(tmp);
+    PlayerBullet tmp(player_bullet_tmp_);
+    tmp.pos.x = player_.pos.x + player_.width / 2.0f - player_bullet_tmp_.width / 2.0f;
+    tmp.pos.y = player_.pos.y;
+    player_bullets_.emplace_back(tmp);
     player_.last_shoot_stamp = currentTime;
   }
 }
@@ -150,32 +163,35 @@ void GameScene::playerShoot() {
 void GameScene::enemyShoot(Enemy& enemy) {
   auto currentTime = SDL_GetTicks();
   if (currentTime - enemy.last_shoot_stamp > enemy.bullet_cooldown) {
-    auto tmp = new EnemyBullet(enemy_bullet_tmp_);
-    tmp->direction_vec = getDirectionVec(enemy);
-    tmp->pos.x = enemy.pos.x + enemy.width / 2.0f;
-    tmp->pos.y = enemy.pos.y + enemy.height / 2.0f;
-    enemy_bullets_.push_back(tmp);
+    EnemyBullet tmp(enemy_bullet_tmp_);
+    tmp.direction_vec = getDirectionVec(enemy);
+    tmp.pos.x = enemy.pos.x + enemy.width / 2.0f;
+    tmp.pos.y = enemy.pos.y + enemy.height / 2.0f;
+    enemy_bullets_.emplace_back(tmp);
     enemy.last_shoot_stamp = currentTime;
   }
 }
 
 void GameScene::updatePlayer(float deltaTime) {
-  if (player_.health <= 0) isDead = true;
+  if (player_.health <= 0) {
+    isDead = true;
+    addExplosion(player_);
+  }
   keyboardControl(deltaTime);
   for (auto it = enemies_.begin(); it != enemies_.end();) {
-    auto enemy = *it;
+    auto& enemy = *it;
     SDL_FRect player_model = {player_.pos.x,
                               player_.pos.y,
                               static_cast<float>(player_.width),
                               static_cast<float>(player_.height)};
-    SDL_FRect enemy_model = {enemy->pos.x,
-                             enemy->pos.y,
-                             static_cast<float>(enemy->width),
-                             static_cast<float>(enemy->height)};
+    SDL_FRect enemy_model = {enemy.pos.x,
+                             enemy.pos.y,
+                             static_cast<float>(enemy.width),
+                             static_cast<float>(enemy.height)};
     if (SDL_HasIntersectionF(&player_model, &enemy_model) && !isDead) {
       player_.health--;
-      enemy->isDead = true;
-      delete enemy;
+      addExplosion(enemy);
+      enemy.isDead = true;
       it = enemies_.erase(it);
     } else
       it++;
@@ -184,26 +200,24 @@ void GameScene::updatePlayer(float deltaTime) {
 
 void GameScene::updataPlayerBullets(float deltaTime) {
   for (auto it = player_bullets_.begin(); it != player_bullets_.end();) {
-    auto bullet = *it;
-    bullet->pos.y -= deltaTime * bullet->speed;
-    if (bullet->pos.y + bullet->height < 0) {
-      delete bullet;
+    auto& bullet = *it;
+    bullet.pos.y -= deltaTime * bullet.speed;
+    if (bullet.pos.y + bullet.height < 0) {
       it = player_bullets_.erase(it);
     } else {
       bool hit = false;
       for (auto& enemy : enemies_) {
-        SDL_FRect bullet_model = {bullet->pos.x,
-                                  bullet->pos.y,
-                                  static_cast<float>(bullet->width),
-                                  static_cast<float>(bullet->height)};
-        SDL_FRect enemy_model = {enemy->pos.x,
-                                 enemy->pos.y,
-                                 static_cast<float>(enemy->width),
-                                 static_cast<float>(enemy->height)};
+        SDL_FRect bullet_model = {bullet.pos.x,
+                                  bullet.pos.y,
+                                  static_cast<float>(bullet.width),
+                                  static_cast<float>(bullet.height)};
+        SDL_FRect enemy_model = {enemy.pos.x,
+                                 enemy.pos.y,
+                                 static_cast<float>(enemy.width),
+                                 static_cast<float>(enemy.height)};
         if (SDL_HasIntersectionF(&bullet_model, &enemy_model)) {
-          enemy->health -= bullet->damage;
-          if (enemy->health <= 0) enemy->isDead = true;
-          delete bullet;
+          enemy.health -= bullet.damage;
+          if (enemy.health <= 0) enemy.isDead = true;
           it = player_bullets_.erase(it);
           hit = true;
           break;
@@ -216,13 +230,13 @@ void GameScene::updataPlayerBullets(float deltaTime) {
 
 void GameScene::updateEnemies(float deltaTime) {
   for (auto it = enemies_.begin(); it != enemies_.end();) {
-    auto enemy = *it;
-    enemy->pos.y += deltaTime * enemy->speed;
-    if (enemy->pos.y > game.getWindowHeight() || enemy->isDead) {
-      delete enemy;
+    auto& enemy = *it;
+    enemy.pos.y += deltaTime * enemy.speed;
+    if (enemy.pos.y > game.getWindowHeight() || enemy.isDead) {
+      addExplosion(enemy);
       it = enemies_.erase(it);
     } else {
-      if (!isDead) enemyShoot(*enemy);
+      if (!isDead) enemyShoot(enemy);
       it++;
     }
   }
@@ -230,26 +244,24 @@ void GameScene::updateEnemies(float deltaTime) {
 
 void GameScene::updateEnemyBullets(float deltaTime) {
   for (auto it = enemy_bullets_.begin(); it != enemy_bullets_.end();) {
-    auto bullet = *it;
-    bullet->pos.x += deltaTime * bullet->speed * bullet->direction_vec.x;
-    bullet->pos.y += deltaTime * bullet->speed * bullet->direction_vec.y;
-    if (bullet->pos.x < 0 || bullet->pos.y < 0 ||
-        bullet->pos.x + bullet->width > game.getWindowWidth() ||
-        bullet->pos.y + bullet->height > game.getWindowHeight()) {
-      delete bullet;
+    auto& bullet = *it;
+    bullet.pos.x += deltaTime * bullet.speed * bullet.direction_vec.x;
+    bullet.pos.y += deltaTime * bullet.speed * bullet.direction_vec.y;
+    if (bullet.pos.x < 0 || bullet.pos.y < 0 ||
+        bullet.pos.x + bullet.width > game.getWindowWidth() ||
+        bullet.pos.y + bullet.height > game.getWindowHeight()) {
       it = enemy_bullets_.erase(it);
     } else {
-      SDL_FRect bullet_model = {bullet->pos.x,
-                                bullet->pos.y,
-                                static_cast<float>(bullet->width),
-                                static_cast<float>(bullet->height)};
+      SDL_FRect bullet_model = {bullet.pos.x,
+                                bullet.pos.y,
+                                static_cast<float>(bullet.width),
+                                static_cast<float>(bullet.height)};
       SDL_FRect player_model = {player_.pos.x,
                                 player_.pos.y,
                                 static_cast<float>(player_.width),
                                 static_cast<float>(player_.height)};
       if (SDL_HasIntersectionF(&bullet_model, &player_model)) {
-        player_.health -= bullet->damage;
-        delete bullet;
+        player_.health -= bullet.damage;
         it = enemy_bullets_.erase(it);
       } else
         it++;
@@ -259,9 +271,31 @@ void GameScene::updateEnemyBullets(float deltaTime) {
 
 void GameScene::spawnEnemy() {
   if (getRandomNum() < 1.f / game.getFPS() && !isDead) {
-    auto tmp = new Enemy(enemy_tmp_);
-    tmp->pos.x = getRandomNum() * (game.getWindowWidth() - tmp->width);
-    tmp->pos.y = static_cast<float>(-tmp->height);
-    enemies_.push_back(tmp);
+    Enemy tmp(enemy_tmp_);
+    tmp.pos.x = getRandomNum() * (game.getWindowWidth() - tmp.width);
+    tmp.pos.y = static_cast<float>(-tmp.height);
+    enemies_.emplace_back(tmp);
+  }
+}
+
+void GameScene::addExplosion(const Object& obj) {
+  Explosion explosion(explosion_tmp_);
+  explosion.pos.x = obj.pos.x + obj.width / 2.f - explosion.width / 2.f;
+  explosion.pos.y = obj.pos.y + obj.height / 2.f - explosion.height / 2.f;
+  explosion.startTime = SDL_GetTicks();
+  explosions_.emplace_back(explosion);
+}
+
+void GameScene::updateExplosions() {
+  auto currentTime = SDL_GetTicks();
+  for (auto it = explosions_.begin(); it != explosions_.end();) {
+    auto& explosion = *it;
+    explosion.currentFrame =
+        static_cast<int>((currentTime - explosion.startTime) / 1000.f * explosion.FPS);
+    if (explosion.currentFrame > explosion.totalFrame) {
+      it = explosions_.erase(it);
+    } else {
+      it++;
+    }
   }
 }

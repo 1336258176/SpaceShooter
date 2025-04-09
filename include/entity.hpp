@@ -3,10 +3,6 @@
 
 #include "pch.hpp"
 
-inline auto DestroyTexture = [](SDL_Texture* texture) {
-  SDL_DestroyTexture(texture);
-};
-
 constexpr int PlayerHealth = 3;
 constexpr int EnemyHealth = 2;
 constexpr int PlayerBulletDamage = 1;
@@ -23,63 +19,56 @@ inline const char* PlayerTexturePath = "assets/image/SpaceShip.png";
 inline const char* PlayerBulletTexturePath = "assets/image/laser-1.png";
 inline const char* EnemyTexturePath = "assets/image/insect-2.png";
 inline const char* EnemyBulletTexturePath = "assets/image/bullet-1.png";
+inline const char* ExplosionTexturePath = "assets/effect/explosion.png";
 
-struct Player {
-  SDL_Texture* texture = nullptr;
+struct TextureDeleter {
+  void operator()(SDL_Texture* texture) const {
+    if (texture) SDL_DestroyTexture(texture);
+  }
+};
+using TexturePtr = std::shared_ptr<SDL_Texture>;
+
+struct Object {
+  TexturePtr texture;
   SDL_FPoint pos{0.f, 0.f};
   int width = 0;
   int height = 0;
+
+  void setTexture(SDL_Texture* new_texture) { texture.reset(new_texture, TextureDeleter()); }
+  SDL_Texture* getTexture() const { return texture.get(); }
+};
+
+struct Player : public Object {
   int speed = PlayerSpeed;                       // pixels per second
   Uint32 bullet_cooldown = PlayerShootCooldown;  // ms
   Uint32 last_shoot_stamp = 0;
   int health = PlayerHealth;
-
-  ~Player() {
-    if (!texture) SDL_DestroyTexture(texture);
-  }
 };
 
-struct PlayerBullet {
-  SDL_Texture* texture = nullptr;
-  SDL_FPoint pos{0.f, 0.f};
-  int width = 0;
-  int height = 0;
+struct PlayerBullet : public Object {
   int speed = PlayerBulletSpeed;
   int damage = PlayerBulletDamage;
-
-  ~PlayerBullet() {
-    if (!texture) SDL_DestroyTexture(texture);
-  }
 };
 
-struct Enemy {
-  SDL_Texture* texture = nullptr;
-  SDL_FPoint pos{0.f, 0.f};
-  int width = 0;
-  int height = 0;
+struct Enemy : public Object {
   int speed = EnemySpeed;
   Uint32 last_shoot_stamp = 0;
   Uint32 bullet_cooldown = EnemyShootCooldown;
   int health = EnemyHealth;
   bool isDead = false;
-
-  ~Enemy() {
-    if (!texture) SDL_DestroyTexture(texture);
-  }
 };
 
-struct EnemyBullet {
-  SDL_Texture* texture = nullptr;
-  SDL_FPoint pos{0.f, 0.f};
+struct EnemyBullet : public Object {
   SDL_FPoint direction_vec{0.f, 0.f};
-  int width = 0;
-  int height = 0;
   int speed = EnemyBulletSpeed;
   int damage = EnemyBulletDamage;
+};
 
-  ~EnemyBullet() {
-    if (!texture) SDL_DestroyTexture(texture);
-  }
+struct Explosion : public Object {
+  Uint32 startTime = 0;
+  int totalFrame = 0;
+  int currentFrame = 0;
+  int FPS = 10;
 };
 
 #endif  // ENTITY_HPP__

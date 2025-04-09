@@ -19,14 +19,16 @@ class GameScene : public SceneBase {
   SDL_FPoint getDirectionVec(const Enemy &enemy);
   void playerShoot();
   void enemyShoot(Enemy &enemy);
-  
-  private:
+
+ private:
   void updatePlayer(float deltaTime);
   void keyboardControl(float deltaTime);
   void updataPlayerBullets(float deltaTime);
   void updateEnemies(float deltaTime);
   void updateEnemyBullets(float deltaTime);
   void spawnEnemy();
+  void addExplosion(const Object &obj);
+  void updateExplosions();
 
  private:
   bool isDead = false;
@@ -38,10 +40,12 @@ class GameScene : public SceneBase {
   Enemy enemy_tmp_;
   PlayerBullet player_bullet_tmp_;
   EnemyBullet enemy_bullet_tmp_;
+  Explosion explosion_tmp_;
 
-  std::list<PlayerBullet *> player_bullets_;
-  std::list<Enemy *> enemies_;
-  std::list<EnemyBullet *> enemy_bullets_;
+  std::list<PlayerBullet> player_bullets_;
+  std::list<Enemy> enemies_;
+  std::list<EnemyBullet> enemy_bullets_;
+  std::list<Explosion> explosions_;
 };
 
 #endif  // SCENEBASE_HPP__
