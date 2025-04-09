@@ -15,11 +15,18 @@ class GameScene : public SceneBase {
   void render() override;
   void handleEvent(const SDL_Event &event) override;
   void quit() override;
-  void keyboardControl(float deltaTime);
   float getRandomNum();
   SDL_FPoint getDirectionVec(const Enemy &enemy);
   void playerShoot();
   void enemyShoot(Enemy &enemy);
+  
+  private:
+  void updatePlayer(float deltaTime);
+  void keyboardControl(float deltaTime);
+  void updataPlayerBullets(float deltaTime);
+  void updateEnemies(float deltaTime);
+  void updateEnemyBullets(float deltaTime);
+  void spawnEnemy();
 
  private:
   bool isDead = false;

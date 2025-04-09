@@ -55,55 +55,12 @@ void GameScene::init() {
 }
 
 void GameScene::update(float deltaTime) {
-  keyboardControl(deltaTime);
+  updatePlayer(deltaTime);
+  updataPlayerBullets(deltaTime);
 
-  // update player bullets
-  for (auto it = player_bullets_.begin(); it != player_bullets_.end();) {
-    auto bullet = *it;
-    bullet->pos.y -= deltaTime * bullet->speed;
-    if (bullet->pos.y + bullet->height < 0) {
-      delete bullet;
-      it = player_bullets_.erase(it);
-    } else {
-      it++;
-    }
-  }
-
-  // spawn enemy: one enemy per second
-  if (getRandomNum() < 1.f / game.getFPS()) {
-    auto tmp = new Enemy(enemy_tmp_);
-    tmp->pos.x = getRandomNum() * (game.getWindowWidth() - tmp->width);
-    tmp->pos.y = static_cast<float>(-tmp->height);
-    enemies_.push_back(tmp);
-  }
-
-  // update enemy position
-  for (auto it = enemies_.begin(); it != enemies_.end();) {
-    auto enemy = *it;
-    enemy->pos.y += deltaTime * enemy->speed;
-    if (enemy->pos.y > game.getWindowHeight()) {
-      delete enemy;
-      it = enemies_.erase(it);
-    } else {
-      enemyShoot(*enemy);
-      it++;
-    }
-  }
-
-  // update enemy bullets
-  for (auto it = enemy_bullets_.begin(); it != enemy_bullets_.end();) {
-    auto bullet = *it;
-    bullet->pos.x += deltaTime * bullet->speed * bullet->direction_vec.x;
-    bullet->pos.y += deltaTime * bullet->speed * bullet->direction_vec.y;
-    if (bullet->pos.x < 0 || bullet->pos.y < 0 ||
-        bullet->pos.x + bullet->width > game.getWindowWidth() ||
-        bullet->pos.y + bullet->height > game.getWindowHeight()) {
-      delete bullet;
-      it = enemy_bullets_.erase(it);
-    } else {
-      it++;
-    }
-  }
+  spawnEnemy();
+  updateEnemies(deltaTime);
+  updateEnemyBullets(deltaTime);
 }
 
 void GameScene::render() {
@@ -118,7 +75,9 @@ void GameScene::render() {
                     bullet->height};
     game.renderer_.renderTextureEx(bullet->texture, dst, angle);
   }
-  game.renderer_.renderTexture(player_.texture, player_.pos, player_.width, player_.height);
+  if (!isDead) {
+    game.renderer_.renderTexture(player_.texture, player_.pos, player_.width, player_.height);
+  }
   for (const auto& enemy : enemies_) {
     game.renderer_.renderTexture(enemy->texture, enemy->pos, enemy->width, enemy->height);
   }
@@ -141,6 +100,7 @@ void GameScene::quit() {
 }
 
 void GameScene::keyboardControl(float deltaTime) {
+  if (isDead) return;
   auto keyboard = SDL_GetKeyboardState(NULL);
   if (keyboard[SDL_SCANCODE_W]) {
     player_.pos.y -= deltaTime * player_.speed;
@@ -196,5 +156,112 @@ void GameScene::enemyShoot(Enemy& enemy) {
     tmp->pos.y = enemy.pos.y + enemy.height / 2.0f;
     enemy_bullets_.push_back(tmp);
     enemy.last_shoot_stamp = currentTime;
+  }
+}
+
+void GameScene::updatePlayer(float deltaTime) {
+  if (player_.health <= 0) isDead = true;
+  keyboardControl(deltaTime);
+  for (auto it = enemies_.begin(); it != enemies_.end();) {
+    auto enemy = *it;
+    SDL_FRect player_model = {player_.pos.x,
+                              player_.pos.y,
+                              static_cast<float>(player_.width),
+                              static_cast<float>(player_.height)};
+    SDL_FRect enemy_model = {enemy->pos.x,
+                             enemy->pos.y,
+                             static_cast<float>(enemy->width),
+                             static_cast<float>(enemy->height)};
+    if (SDL_HasIntersectionF(&player_model, &enemy_model) && !isDead) {
+      player_.health--;
+      enemy->isDead = true;
+      delete enemy;
+      it = enemies_.erase(it);
+    } else
+      it++;
+  }
+}
+
+void GameScene::updataPlayerBullets(float deltaTime) {
+  for (auto it = player_bullets_.begin(); it != player_bullets_.end();) {
+    auto bullet = *it;
+    bullet->pos.y -= deltaTime * bullet->speed;
+    if (bullet->pos.y + bullet->height < 0) {
+      delete bullet;
+      it = player_bullets_.erase(it);
+    } else {
+      bool hit = false;
+      for (auto& enemy : enemies_) {
+        SDL_FRect bullet_model = {bullet->pos.x,
+                                  bullet->pos.y,
+                                  static_cast<float>(bullet->width),
+                                  static_cast<float>(bullet->height)};
+        SDL_FRect enemy_model = {enemy->pos.x,
+                                 enemy->pos.y,
+                                 static_cast<float>(enemy->width),
+                                 static_cast<float>(enemy->height)};
+        if (SDL_HasIntersectionF(&bullet_model, &enemy_model)) {
+          enemy->health -= bullet->damage;
+          if (enemy->health <= 0) enemy->isDead = true;
+          delete bullet;
+          it = player_bullets_.erase(it);
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) it++;
+    }
+  }
+}
+
+void GameScene::updateEnemies(float deltaTime) {
+  for (auto it = enemies_.begin(); it != enemies_.end();) {
+    auto enemy = *it;
+    enemy->pos.y += deltaTime * enemy->speed;
+    if (enemy->pos.y > game.getWindowHeight() || enemy->isDead) {
+      delete enemy;
+      it = enemies_.erase(it);
+    } else {
+      if (!isDead) enemyShoot(*enemy);
+      it++;
+    }
+  }
+}
+
+void GameScene::updateEnemyBullets(float deltaTime) {
+  for (auto it = enemy_bullets_.begin(); it != enemy_bullets_.end();) {
+    auto bullet = *it;
+    bullet->pos.x += deltaTime * bullet->speed * bullet->direction_vec.x;
+    bullet->pos.y += deltaTime * bullet->speed * bullet->direction_vec.y;
+    if (bullet->pos.x < 0 || bullet->pos.y < 0 ||
+        bullet->pos.x + bullet->width > game.getWindowWidth() ||
+        bullet->pos.y + bullet->height > game.getWindowHeight()) {
+      delete bullet;
+      it = enemy_bullets_.erase(it);
+    } else {
+      SDL_FRect bullet_model = {bullet->pos.x,
+                                bullet->pos.y,
+                                static_cast<float>(bullet->width),
+                                static_cast<float>(bullet->height)};
+      SDL_FRect player_model = {player_.pos.x,
+                                player_.pos.y,
+                                static_cast<float>(player_.width),
+                                static_cast<float>(player_.height)};
+      if (SDL_HasIntersectionF(&bullet_model, &player_model)) {
+        player_.health -= bullet->damage;
+        delete bullet;
+        it = enemy_bullets_.erase(it);
+      } else
+        it++;
+    }
+  }
+}
+
+void GameScene::spawnEnemy() {
+  if (getRandomNum() < 1.f / game.getFPS() && !isDead) {
+    auto tmp = new Enemy(enemy_tmp_);
+    tmp->pos.x = getRandomNum() * (game.getWindowWidth() - tmp->width);
+    tmp->pos.y = static_cast<float>(-tmp->height);
+    enemies_.push_back(tmp);
   }
 }
