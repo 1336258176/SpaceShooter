@@ -65,11 +65,25 @@ void GameScene::init() {
                    &explosion_tmp_.height);
   explosion_tmp_.totalFrame = explosion_tmp_.width / explosion_tmp_.height;
   explosion_tmp_.width = explosion_tmp_.height;
+
+  // item
+  life_item_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), LifeItemTexturePath));
+  if (!life_item_tmp_.texture) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load LifeItem texture error.");
+  }
+  SDL_QueryTexture(life_item_tmp_.getTexture(),
+                   NULL,
+                   NULL,
+                   &life_item_tmp_.width,
+                   &life_item_tmp_.height);
+  life_item_tmp_.width /= 4;
+  life_item_tmp_.height /= 4;
 }
 
 void GameScene::update(float deltaTime) {
   updatePlayer(deltaTime);
   updataPlayerBullets(deltaTime);
+  updateItem(deltaTime);
 
   spawnEnemy();
   updateEnemies(deltaTime);
@@ -79,6 +93,9 @@ void GameScene::update(float deltaTime) {
 }
 
 void GameScene::render() {
+  for (const auto& item : items_) {
+    game.renderer_.renderTexture(item.getTexture(), item.pos, item.width, item.height);
+  }
   for (const auto& bullet : player_bullets_) {
     game.renderer_.renderTexture(bullet.getTexture(), bullet.pos, bullet.width, bullet.height);
   }
@@ -138,6 +155,11 @@ void GameScene::keyboardControl(float deltaTime) {
   }
 }
 
+/**
+ * @brief 返回0~1之间的浮点数
+ *
+ * @return float
+ */
 float GameScene::getRandomNum() { return dis_(gen_); }
 
 SDL_FPoint GameScene::getDirectionVec(const Enemy& enemy) {
@@ -147,6 +169,17 @@ SDL_FPoint GameScene::getDirectionVec(const Enemy& enemy) {
   SDL_FPoint v = {player_center.x - enemy_center.x, player_center.y - enemy_center.y};
   float l = SDL_sqrtf(v.x * v.x + v.y * v.y);
   return l == 0 ? SDL_FPoint{0.f, 0.f} : SDL_FPoint{v.x / l, v.y / l};
+}
+
+void GameScene::generateItem(const Object& object) {
+  if (getRandomNum() > GenerateLifeItemProbability) return;
+  Item tmp(life_item_tmp_);
+  tmp.pos.x = object.pos.x + (object.width - tmp.width) / 2.0f;
+  tmp.pos.y = object.pos.y + (object.height - tmp.height) / 2.0f;
+  float angle = static_cast<float>(getRandomNum() * 2 * M_PI);
+  tmp.direction_vec.x = std::cos(angle);
+  tmp.direction_vec.y = std::sin(angle);
+  items_.emplace_back(tmp);
 }
 
 void GameScene::playerShoot() {
@@ -217,7 +250,10 @@ void GameScene::updataPlayerBullets(float deltaTime) {
                                  static_cast<float>(enemy.height)};
         if (SDL_HasIntersectionF(&bullet_model, &enemy_model)) {
           enemy.health -= bullet.damage;
-          if (enemy.health <= 0) enemy.isDead = true;
+          if (enemy.health <= 0) {
+            generateItem(enemy);
+            enemy.isDead = true;
+          }
           it = player_bullets_.erase(it);
           hit = true;
           break;
@@ -247,9 +283,8 @@ void GameScene::updateEnemyBullets(float deltaTime) {
     auto& bullet = *it;
     bullet.pos.x += deltaTime * bullet.speed * bullet.direction_vec.x;
     bullet.pos.y += deltaTime * bullet.speed * bullet.direction_vec.y;
-    if (bullet.pos.x < 0 || bullet.pos.y < 0 ||
-        bullet.pos.x + bullet.width > game.getWindowWidth() ||
-        bullet.pos.y + bullet.height > game.getWindowHeight()) {
+    if (bullet.pos.x > game.getWindowWidth() || bullet.pos.y > game.getWindowHeight() ||
+        bullet.pos.x + bullet.width < 0 || bullet.pos.y + bullet.height < 0) {
       it = enemy_bullets_.erase(it);
     } else {
       SDL_FRect bullet_model = {bullet.pos.x,
@@ -265,6 +300,46 @@ void GameScene::updateEnemyBullets(float deltaTime) {
         it = enemy_bullets_.erase(it);
       } else
         it++;
+    }
+  }
+}
+
+void GameScene::updateItem(float deltaTime) {
+  for (auto it = items_.begin(); it != items_.end();) {
+    auto& item = *it;
+
+    item.pos.x += deltaTime * item.speed * item.direction_vec.x;
+    item.pos.y += deltaTime * item.speed * item.direction_vec.y;
+    if (item.pos.x <= 0 && item.CollisionCount > 0) {
+      item.direction_vec.x = -item.direction_vec.x;
+      item.CollisionCount--;
+    } else if (item.pos.y <= 0 && item.CollisionCount > 0) {
+      item.direction_vec.y = -item.direction_vec.y;
+      item.CollisionCount--;
+    } else if (item.pos.x + item.width >= game.getWindowWidth() && item.CollisionCount > 0) {
+      item.direction_vec.x = -item.direction_vec.x;
+      item.CollisionCount--;
+    } else if (item.pos.y + item.height >= game.getWindowHeight() && item.CollisionCount > 0) {
+      item.direction_vec.y = -item.direction_vec.y;
+      item.CollisionCount--;
+    }
+    if (item.CollisionCount == 0) {
+      it = items_.erase(it);
+      break;
+    }
+    SDL_Rect item_model = {static_cast<int>(item.pos.x),
+                           static_cast<int>(item.pos.y),
+                           item.width,
+                           item.height};
+    SDL_Rect player_model = {static_cast<int>(player_.pos.x),
+                             static_cast<int>(player_.pos.y),
+                             player_.width,
+                             player_.height};
+    if (SDL_HasIntersection(&item_model, &player_model)) {
+      it = items_.erase(it);
+      player_.health = PlayerMaxHP;
+    } else {
+      it++;
     }
   }
 }

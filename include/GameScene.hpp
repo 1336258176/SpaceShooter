@@ -15,17 +15,20 @@ class GameScene : public SceneBase {
   void render() override;
   void handleEvent(const SDL_Event &event) override;
   void quit() override;
-  float getRandomNum();
-  SDL_FPoint getDirectionVec(const Enemy &enemy);
-  void playerShoot();
-  void enemyShoot(Enemy &enemy);
 
  private:
+  float getRandomNum();
+  SDL_FPoint getDirectionVec(const Enemy &enemy);
+  void generateItem(const Object& object);
+
+  void playerShoot();
+  void enemyShoot(Enemy &enemy);
   void updatePlayer(float deltaTime);
   void keyboardControl(float deltaTime);
   void updataPlayerBullets(float deltaTime);
   void updateEnemies(float deltaTime);
   void updateEnemyBullets(float deltaTime);
+  void updateItem(float deltaTime);
   void spawnEnemy();
   void addExplosion(const Object &obj);
   void updateExplosions();
@@ -41,11 +44,13 @@ class GameScene : public SceneBase {
   PlayerBullet player_bullet_tmp_;
   EnemyBullet enemy_bullet_tmp_;
   Explosion explosion_tmp_;
+  Item life_item_tmp_;
 
   std::list<PlayerBullet> player_bullets_;
   std::list<Enemy> enemies_;
   std::list<EnemyBullet> enemy_bullets_;
   std::list<Explosion> explosions_;
+  std::list<Item> items_;
 };
 
 #endif  // SCENEBASE_HPP__

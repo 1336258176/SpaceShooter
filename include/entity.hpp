@@ -3,10 +3,11 @@
 
 #include "pch.hpp"
 
-constexpr int PlayerHealth = 3;
-constexpr int EnemyHealth = 2;
+constexpr int PlayerMaxHP = 3;
+constexpr int EnemyMaxHP = 2;
 constexpr int PlayerBulletDamage = 1;
 constexpr int EnemyBulletDamage = 1;
+constexpr int ItemCollisionCount = 3;
 
 constexpr int PlayerSpeed = 300;
 constexpr int PlayerBulletSpeed = 600;
@@ -14,12 +15,18 @@ constexpr int PlayerShootCooldown = 300;
 constexpr int EnemySpeed = 200;
 constexpr int EnemyBulletSpeed = 400;
 constexpr int EnemyShootCooldown = 2000;
+constexpr int ItemSpeed = 300;
+
+constexpr float GenerateLifeItemProbability = 0.2f;
 
 inline const char* PlayerTexturePath = "assets/image/SpaceShip.png";
 inline const char* PlayerBulletTexturePath = "assets/image/laser-1.png";
 inline const char* EnemyTexturePath = "assets/image/insect-2.png";
 inline const char* EnemyBulletTexturePath = "assets/image/bullet-1.png";
 inline const char* ExplosionTexturePath = "assets/effect/explosion.png";
+inline const char* LifeItemTexturePath = "assets/image/bonus_life.png";
+inline const char* TimeItemTexturePath = "assets/image/bonus_time.png";
+inline const char* ShieldItemTexturePath = "assets/image/bonus_shield.png";
 
 struct TextureDeleter {
   void operator()(SDL_Texture* texture) const {
@@ -27,6 +34,8 @@ struct TextureDeleter {
   }
 };
 using TexturePtr = std::shared_ptr<SDL_Texture>;
+
+enum class ItemType { Life, Time, Shield };
 
 struct Object {
   TexturePtr texture;
@@ -42,7 +51,7 @@ struct Player : public Object {
   int speed = PlayerSpeed;                       // pixels per second
   Uint32 bullet_cooldown = PlayerShootCooldown;  // ms
   Uint32 last_shoot_stamp = 0;
-  int health = PlayerHealth;
+  int health = PlayerMaxHP;
 };
 
 struct PlayerBullet : public Object {
@@ -54,7 +63,7 @@ struct Enemy : public Object {
   int speed = EnemySpeed;
   Uint32 last_shoot_stamp = 0;
   Uint32 bullet_cooldown = EnemyShootCooldown;
-  int health = EnemyHealth;
+  int health = EnemyMaxHP;
   bool isDead = false;
 };
 
@@ -69,6 +78,13 @@ struct Explosion : public Object {
   int totalFrame = 0;
   int currentFrame = 0;
   int FPS = 10;
+};
+
+struct Item : public Object {
+  ItemType type = ItemType::Life;
+  SDL_FPoint direction_vec{0.f, 0.f};
+  int speed = ItemSpeed;
+  int CollisionCount = ItemCollisionCount;
 };
 
 #endif  // ENTITY_HPP__
