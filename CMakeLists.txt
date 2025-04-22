@@ -8,6 +8,8 @@ set(SDL_image_ROOT "" CACHE PATH "SDL_image root directory")
 set(SDL_mixer_ROOT "" CACHE PATH "SDL_Mixer root directory")
 set(SDL_ttf_ROOT "" CACHE PATH "SDL_ttf root director")
 
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(SDL2 REQUIRED PATHS "${SDL_ROOT}/cmake")
 find_package(SDL2_image REQUIRED PATHS "${SDL_image_ROOT}/cmake")
 find_package(SDL2_mixer REQUIRED PATHS "${SDL_mixer_ROOT}/cmake")
