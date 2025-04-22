@@ -11,7 +11,7 @@ class Windows final {
   SDL_Window* get() const { return windows_.get(); }
 
   const int WindowsWidth = 600;
-  const int WindowsHeight = 800;
+  const int WindowsHeight = 750;
 
  private:
   std::unique_ptr<SDL_Window, decltype(DestroyWindows)> windows_;
