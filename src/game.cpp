@@ -29,6 +29,20 @@ void Game::init() {
   state = GameState::Start;
   currentScene_ = std::make_unique<GameScene>();
   currentScene_->init();
+
+  nearStar.setTexture(IMG_LoadTexture(renderer_.get(), NearStarBackgroundPath));
+  if (!nearStar.texture) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load near-star background texture error");
+  }
+  SDL_QueryTexture(nearStar.getTexture(), NULL, NULL, &nearStar.width, &nearStar.height);
+  nearStar.speed = NearBackgroundSpeed;
+
+  farStar.setTexture(IMG_LoadTexture(renderer_.get(), FarStarBackgroundPath));
+  if (!farStar.texture) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load far-star background texture error");
+  }
+  SDL_QueryTexture(farStar.getTexture(), NULL, NULL, &farStar.width, &farStar.height);
+  farStar.speed = FarBackgroundSpeed;
 }
 
 void Game::quit() {
@@ -83,6 +97,7 @@ void Game::run() {
 
     Uint32 endTime = SDL_GetTicks();
     Uint32 diff = endTime - startTime;
+    // 实现速度与帧率无关
     if (diff < frameTime_) {
       SDL_Delay(frameTime_ - diff);
       deltaTime_ = frameTime_ / 1000.0f;
@@ -102,11 +117,47 @@ void Game::handleEvent(SDL_Event& event) {
   }
 }
 
-void Game::update(float deltaTime) { currentScene_->update(deltaTime); }
+void Game::update(float deltaTime) {
+  updateBackground(deltaTime);
+  currentScene_->update(deltaTime);
+}
 
 void Game::present() {
   renderer_.setColor(SDL_Color{0, 0, 0, 255});
   renderer_.clearScreen();
+  renderBackground();
   currentScene_->render();
   renderer_.present();
+}
+
+void Game::updateBackground(float deltaTime) {
+  nearStar.offset += deltaTime * nearStar.speed;
+  if (nearStar.offset >= 0) {
+    nearStar.offset -= nearStar.height;
+  }
+  farStar.offset += deltaTime * farStar.speed;
+  if (farStar.offset >= 0) {
+    farStar.offset -= farStar.height;
+  }
+}
+
+void Game::renderBackground() {
+  // 将一个texture重复地铺在屏幕上
+  for (float pos_y = nearStar.offset; pos_y <= getWindowHeight(); pos_y += nearStar.height) {
+    for (float pos_x = 0.f; pos_x <= getWindowWidth(); pos_x += nearStar.width) {
+      SDL_FPoint dst;
+      dst.x = pos_x;
+      dst.y = pos_y;
+      renderer_.renderTexture(nearStar.getTexture(), dst, nearStar.width, nearStar.height, NULL);
+    }
+  }
+
+  for (float pos_y = farStar.offset; pos_y <= getWindowHeight(); pos_y += farStar.height) {
+    for (float pos_x = 0.f; pos_x <= getWindowWidth(); pos_x += farStar.width) {
+      SDL_FPoint dst;
+      dst.x = pos_x;
+      dst.y = pos_y;
+      renderer_.renderTexture(farStar.getTexture(), dst, farStar.width, farStar.height, NULL);
+    }
+  }
 }

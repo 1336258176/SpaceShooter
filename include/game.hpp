@@ -38,6 +38,12 @@ class Game final {
  private:
   Game(Windows &&window, Renderer &&renderer);
 
+  void updateBackground(float deltaTime);
+  void renderBackground();
+
+  BackGround nearStar;
+  BackGround farStar;
+
   bool shouldColse = false;
   const Uint32 FPS = 60;
   const Uint32 frameTime_ = 1000 / FPS;  // ms

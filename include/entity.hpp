@@ -17,6 +17,9 @@ constexpr int EnemyBulletSpeed = 400;
 constexpr int EnemyShootCooldown = 2000;
 constexpr int ItemSpeed = 300;
 
+constexpr int NearBackgroundSpeed = 90;
+constexpr int FarBackgroundSpeed = 30;
+
 constexpr float GenerateLifeItemProbability = 0.2f;
 
 inline const char* PlayerTexturePath = "assets/image/SpaceShip.png";
@@ -27,6 +30,8 @@ inline const char* ExplosionTexturePath = "assets/effect/explosion.png";
 inline const char* LifeItemTexturePath = "assets/image/bonus_life.png";
 inline const char* TimeItemTexturePath = "assets/image/bonus_time.png";
 inline const char* ShieldItemTexturePath = "assets/image/bonus_shield.png";
+inline const char* NearStarBackgroundPath = "assets/image/Stars-A.png";
+inline const char* FarStarBackgroundPath = "assets/image/Stars-B.png";
 
 struct TextureDeleter {
   void operator()(SDL_Texture* texture) const {
@@ -85,6 +90,11 @@ struct Item : public Object {
   SDL_FPoint direction_vec{0.f, 0.f};
   int speed = ItemSpeed;
   int CollisionCount = ItemCollisionCount;
+};
+
+struct BackGround : public Object {
+  float offset = 0.f; // 当前Texture相对于窗口的偏移量，负值表示在屏幕外部分
+  int speed;
 };
 
 #endif  // ENTITY_HPP__
