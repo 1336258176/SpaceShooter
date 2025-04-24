@@ -21,6 +21,8 @@ constexpr int NearBackgroundSpeed = 90;
 constexpr int FarBackgroundSpeed = 30;
 
 constexpr float GenerateLifeItemProbability = 0.2f;
+constexpr int DefeatEnemyPoints = 5;
+constexpr int CollideEnemyCosts = 5;
 
 inline const char* PlayerTexturePath = "assets/image/SpaceShip.png";
 inline const char* PlayerBulletTexturePath = "assets/image/laser-1.png";
@@ -33,6 +35,8 @@ inline const char* ShieldItemTexturePath = "assets/image/bonus_shield.png";
 inline const char* NearStarBackgroundPath = "assets/image/Stars-A.png";
 inline const char* FarStarBackgroundPath = "assets/image/Stars-B.png";
 inline const char* HPUITexturePath = "assets/image/Health UI Black.png";
+inline const char* Font1Path = "assets/font/VonwaonBitmap-12px.ttf";
+inline const char* Font2Path = "assets/font/VonwaonBitmap-16px.ttf";
 
 struct TextureDeleter {
   void operator()(SDL_Texture* texture) const {
@@ -40,6 +44,18 @@ struct TextureDeleter {
   }
 };
 using TexturePtr = std::shared_ptr<SDL_Texture>;
+
+struct TTFDeleter {
+  void operator()(TTF_Font* font) const {
+    if (font) TTF_CloseFont(font);
+  }
+};
+
+struct SurfaceDeleter {
+  void operator()(SDL_Surface* surface) const {
+    if (surface) SDL_FreeSurface(surface);
+  }
+};
 
 enum class ItemType { Life, Time, Shield };
 
@@ -94,7 +110,8 @@ struct Item : public Object {
 };
 
 struct BackGround : public Object {
-  float offset = 0.f; // The offset of the current Texture relative to the window, with a negative value indicating the part outside the screen
+  float offset = 0.f;  // The offset of the current Texture relative to the window, with a negative
+                       // value indicating the part outside the screen
   int speed;
 };
 

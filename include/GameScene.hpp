@@ -34,12 +34,14 @@ class GameScene : public SceneBase {
   void updateExplosions();
 
  private:
-  bool isDead = false;
+  int score_ = 0;
+  bool isDead_ = false;
   std::mt19937 gen_;
   std::uniform_real_distribution<float> dis_;
 
-  Player player_;
+  std::unique_ptr<TTF_Font, TTFDeleter> ttf_font_{nullptr, TTFDeleter{}};
 
+  Player player_;
   Enemy enemy_tmp_;
   PlayerBullet player_bullet_tmp_;
   EnemyBullet enemy_bullet_tmp_;

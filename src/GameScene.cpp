@@ -7,6 +7,9 @@ void GameScene::init() {
   gen_ = std::mt19937(rd());
   dis_ = std::uniform_real_distribution<float>(0.f, 1.f);
 
+  // load font
+  ttf_font_.reset(TTF_OpenFont(Font1Path, 20));
+
   // player
   player_.setTexture(IMG_LoadTexture(game.getRenderer(), PlayerTexturePath));
   if (!player_.texture) {
@@ -122,7 +125,7 @@ void GameScene::render() {
   }
 
   // player
-  if (!isDead) {
+  if (!isDead_) {
     game.renderer_.renderTexture(player_.getTexture(), player_.pos, player_.width, player_.height);
   }
 
@@ -141,7 +144,7 @@ void GameScene::render() {
                                  &src);
   }
 
-  // UI
+  // UI-HP
   for (int i = 0; i < player_.health; i++) {
     SDL_FPoint dst_pos = {i * ui_tmp_.offset + ui_tmp_.pos.x, ui_tmp_.pos.y};
     game.renderer_.renderTexture(ui_tmp_.getTexture(), dst_pos, ui_tmp_.width, ui_tmp_.height);
@@ -152,6 +155,18 @@ void GameScene::render() {
     game.renderer_.renderTexture(ui_tmp_.getTexture(), dst_pos, ui_tmp_.width, ui_tmp_.height);
   }
   SDL_SetTextureColorMod(ui_tmp_.getTexture(), 255, 255, 255);
+  
+  // UI-Score
+  std::string text = "Score: " + std::to_string(score_);
+  SDL_Surface* surface =
+      TTF_RenderText_Blended(ttf_font_.get(), text.c_str(), {255, 255, 255, 255});
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(game.getRenderer(), surface);
+  int w, h;
+  SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+  SDL_FPoint pos = {game.getWindowWidth() * 4.5f / 6.0f, 10.f};
+  game.renderer_.renderTexture(texture, pos, w, h);
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
 }
 
 GameScene::~GameScene() { quit(); }
@@ -161,7 +176,7 @@ void GameScene::handleEvent(const SDL_Event& event) {}
 void GameScene::quit() {}
 
 void GameScene::keyboardControl(float deltaTime) {
-  if (isDead) return;
+  if (isDead_) return;
   auto keyboard = SDL_GetKeyboardState(NULL);
   if (keyboard[SDL_SCANCODE_W]) {
     player_.pos.y -= deltaTime * player_.speed;
@@ -238,7 +253,7 @@ void GameScene::enemyShoot(Enemy& enemy) {
 
 void GameScene::updatePlayer(float deltaTime) {
   if (player_.health <= 0) {
-    isDead = true;
+    isDead_ = true;
     addExplosion(player_);
   }
   keyboardControl(deltaTime);
@@ -252,10 +267,11 @@ void GameScene::updatePlayer(float deltaTime) {
                              enemy.pos.y,
                              static_cast<float>(enemy.width),
                              static_cast<float>(enemy.height)};
-    if (SDL_HasIntersectionF(&player_model, &enemy_model) && !isDead) {
+    if (SDL_HasIntersectionF(&player_model, &enemy_model) && !isDead_) {
       player_.health--;
       addExplosion(enemy);
       enemy.isDead = true;
+      score_ -= CollideEnemyCosts;
       it = enemies_.erase(it);
     } else
       it++;
@@ -283,6 +299,7 @@ void GameScene::updataPlayerBullets(float deltaTime) {
           enemy.health -= bullet.damage;
           if (enemy.health <= 0) {
             generateItem(enemy);
+            score_ += DefeatEnemyPoints;
             enemy.isDead = true;
           }
           it = player_bullets_.erase(it);
@@ -303,7 +320,7 @@ void GameScene::updateEnemies(float deltaTime) {
       addExplosion(enemy);
       it = enemies_.erase(it);
     } else {
-      if (!isDead) enemyShoot(enemy);
+      if (!isDead_) enemyShoot(enemy);
       it++;
     }
   }
@@ -376,7 +393,7 @@ void GameScene::updateItem(float deltaTime) {
 }
 
 void GameScene::spawnEnemy() {
-  if (getRandomNum() < 1.f / game.getFPS() && !isDead) {
+  if (getRandomNum() < 1.f / game.getFPS() && !isDead_) {
     Enemy tmp(enemy_tmp_);
     tmp.pos.x = getRandomNum() * (game.getWindowWidth() - tmp.width);
     tmp.pos.y = static_cast<float>(-tmp.height);
