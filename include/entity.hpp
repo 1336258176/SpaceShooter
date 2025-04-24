@@ -15,7 +15,7 @@ constexpr int PlayerShootCooldown = 300;
 constexpr int EnemySpeed = 200;
 constexpr int EnemyBulletSpeed = 400;
 constexpr int EnemyShootCooldown = 2000;
-constexpr int ItemSpeed = 300;
+constexpr int ItemSpeed = 200;
 
 constexpr int NearBackgroundSpeed = 90;
 constexpr int FarBackgroundSpeed = 30;
@@ -32,6 +32,7 @@ inline const char* TimeItemTexturePath = "assets/image/bonus_time.png";
 inline const char* ShieldItemTexturePath = "assets/image/bonus_shield.png";
 inline const char* NearStarBackgroundPath = "assets/image/Stars-A.png";
 inline const char* FarStarBackgroundPath = "assets/image/Stars-B.png";
+inline const char* HPUITexturePath = "assets/image/Health UI Black.png";
 
 struct TextureDeleter {
   void operator()(SDL_Texture* texture) const {
@@ -93,8 +94,12 @@ struct Item : public Object {
 };
 
 struct BackGround : public Object {
-  float offset = 0.f; // 当前Texture相对于窗口的偏移量，负值表示在屏幕外部分
+  float offset = 0.f; // The offset of the current Texture relative to the window, with a negative value indicating the part outside the screen
   int speed;
+};
+
+struct HPUI : public Object {
+  float offset = 0.f;
 };
 
 #endif  // ENTITY_HPP__

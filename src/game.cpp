@@ -97,7 +97,7 @@ void Game::run() {
 
     Uint32 endTime = SDL_GetTicks();
     Uint32 diff = endTime - startTime;
-    // 实现速度与帧率无关
+    // Speed has nothing to do with frame rate
     if (diff < frameTime_) {
       SDL_Delay(frameTime_ - diff);
       deltaTime_ = frameTime_ / 1000.0f;
@@ -142,7 +142,7 @@ void Game::updateBackground(float deltaTime) {
 }
 
 void Game::renderBackground() {
-  // 将一个texture重复地铺在屏幕上
+  // Repeatedly lay a texture on the screen
   for (float pos_y = nearStar.offset; pos_y <= getWindowHeight(); pos_y += nearStar.height) {
     for (float pos_x = 0.f; pos_x <= getWindowWidth(); pos_x += nearStar.width) {
       SDL_FPoint dst;

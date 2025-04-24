@@ -45,6 +45,7 @@ class GameScene : public SceneBase {
   EnemyBullet enemy_bullet_tmp_;
   Explosion explosion_tmp_;
   Item life_item_tmp_;
+  HPUI ui_tmp_;
 
   std::list<PlayerBullet> player_bullets_;
   std::list<Enemy> enemies_;

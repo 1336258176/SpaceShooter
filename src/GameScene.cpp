@@ -78,6 +78,14 @@ void GameScene::init() {
                    &life_item_tmp_.height);
   life_item_tmp_.width /= 4;
   life_item_tmp_.height /= 4;
+
+  // UI
+  ui_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), HPUITexturePath));
+  if (!ui_tmp_.texture) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load HP-UI texture error.");
+  }
+  SDL_QueryTexture(ui_tmp_.getTexture(), NULL, NULL, &ui_tmp_.width, &ui_tmp_.height);
+  ui_tmp_.offset = static_cast<float>(ui_tmp_.width);
 }
 
 void GameScene::update(float deltaTime) {
@@ -93,12 +101,17 @@ void GameScene::update(float deltaTime) {
 }
 
 void GameScene::render() {
+  // items
   for (const auto& item : items_) {
     game.renderer_.renderTexture(item.getTexture(), item.pos, item.width, item.height);
   }
+
+  // player bullets
   for (const auto& bullet : player_bullets_) {
     game.renderer_.renderTexture(bullet.getTexture(), bullet.pos, bullet.width, bullet.height);
   }
+
+  // enemy bullets
   for (const auto& bullet : enemy_bullets_) {
     double angle = atan2(bullet.direction_vec.y, bullet.direction_vec.x) * 180.0 / M_PI - 90.0;
     SDL_Rect dst = {static_cast<int>(bullet.pos.x),
@@ -107,12 +120,18 @@ void GameScene::render() {
                     bullet.height};
     game.renderer_.renderTextureEx(bullet.getTexture(), dst, angle);
   }
+
+  // player
   if (!isDead) {
     game.renderer_.renderTexture(player_.getTexture(), player_.pos, player_.width, player_.height);
   }
+
+  // enemies
   for (const auto& enemy : enemies_) {
     game.renderer_.renderTexture(enemy.getTexture(), enemy.pos, enemy.width, enemy.height);
   }
+
+  // explosion
   for (auto& explosion : explosions_) {
     SDL_Rect src = {explosion.currentFrame * explosion.width, 0, explosion.width, explosion.height};
     game.renderer_.renderTexture(explosion.getTexture(),
@@ -121,6 +140,18 @@ void GameScene::render() {
                                  explosion.height,
                                  &src);
   }
+
+  // UI
+  for (int i = 0; i < player_.health; i++) {
+    SDL_FPoint dst_pos = {i * ui_tmp_.offset + ui_tmp_.pos.x, ui_tmp_.pos.y};
+    game.renderer_.renderTexture(ui_tmp_.getTexture(), dst_pos, ui_tmp_.width, ui_tmp_.height);
+  }
+  SDL_SetTextureColorMod(ui_tmp_.getTexture(), 100, 100, 100);
+  for (int i = player_.health; i < PlayerMaxHP; i++) {
+    SDL_FPoint dst_pos = {i * ui_tmp_.offset + ui_tmp_.pos.x, ui_tmp_.pos.y};
+    game.renderer_.renderTexture(ui_tmp_.getTexture(), dst_pos, ui_tmp_.width, ui_tmp_.height);
+  }
+  SDL_SetTextureColorMod(ui_tmp_.getTexture(), 255, 255, 255);
 }
 
 GameScene::~GameScene() { quit(); }
