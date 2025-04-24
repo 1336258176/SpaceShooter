@@ -17,6 +17,13 @@ class StartScene : public SceneBase {
   void quit() override;
 
  private:
+  float timer_ = 0.f;
+
+  std::string title_text_ = "Space Shooter";
+  std::string start_game_text_ = "Press J to start the game...";
+
+  SDL_FPoint title_text_pos_{0.f, 0.f};
+  SDL_FPoint start_game_text_pos_{0.f, 0.f};
 };
 
 #endif  // STARTSCENE_HPP__

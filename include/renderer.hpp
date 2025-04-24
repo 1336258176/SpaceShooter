@@ -25,6 +25,7 @@ class Renderer final {
                        double angle,
                        const SDL_Point* center = NULL,
                        const SDL_RendererFlip filp = SDL_FLIP_NONE);
+  void renderText(TTF_Font* font, const std::string& text, SDL_Color color, const SDL_FPoint& dst);
 
  private:
   std::unique_ptr<SDL_Renderer, decltype(DestroyRenderer)> renderer_;

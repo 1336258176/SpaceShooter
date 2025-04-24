@@ -6,30 +6,33 @@ Game::Game(Windows&& window, Renderer&& renderer) :
     window_(std::move(window)), renderer_(std::move(renderer)) {}
 
 void Game::init() {
+  // int SDL
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-    shouldColse = true;
+    shouldColse_ = true;
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL init error: %s", SDL_GetError());
   }
 
   if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
-    shouldColse = true;
+    shouldColse_ = true;
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image init error: %s", IMG_GetError());
   }
 
   if (TTF_Init() != 0) {
-    shouldColse = true;
+    shouldColse_ = true;
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf init error: %s", TTF_GetError());
   }
 
   if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
-    shouldColse = true;
+    shouldColse_ = true;
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_mixer init error: %s", Mix_GetError());
   }
 
-  state = GameState::Start;
-  currentScene_ = std::make_unique<GameScene>();
+  // create and init scene
+  state_ = GameState::Start;
+  currentScene_ = std::make_unique<StartScene>();
   currentScene_->init();
 
+  // load background texture
   nearStar.setTexture(IMG_LoadTexture(renderer_.get(), NearStarBackgroundPath));
   if (!nearStar.texture) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load near-star background texture error");
@@ -43,6 +46,16 @@ void Game::init() {
   }
   SDL_QueryTexture(farStar.getTexture(), NULL, NULL, &farStar.width, &farStar.height);
   farStar.speed = FarBackgroundSpeed;
+
+  // load font
+  title_font_.reset(TTF_OpenFont(TitleFontPath, 80));
+  if (!title_font_) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf open title font error");
+  }
+  text_font_.reset(TTF_OpenFont(TextFontPath, 20));
+  if (!text_font_) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf open text font error");
+  }
 }
 
 void Game::quit() {
@@ -64,6 +77,7 @@ void Game::changeScene(GameState next_game_state) {
   } else {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Error game state!");
   }
+  state_ = next_game_state;
   currentScene_->init();
 }
 
@@ -86,8 +100,12 @@ int Game::getWindowWidth() const { return window_.WindowsWidth; }
 
 int Game::getFPS() const { return static_cast<int>(FPS); }
 
+TTF_Font* Game::getTitleFont() const { return title_font_.get(); }
+
+TTF_Font* Game::getTextFont() const { return text_font_.get(); }
+
 void Game::run() {
-  while (!shouldColse) {
+  while (!shouldColse_) {
     Uint32 startTime = SDL_GetTicks();
 
     SDL_Event event;
@@ -110,7 +128,7 @@ void Game::run() {
 void Game::handleEvent(SDL_Event& event) {
   while (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) {
-      shouldColse = true;
+      shouldColse_ = true;
     } else {
       currentScene_->handleEvent(event);
     }

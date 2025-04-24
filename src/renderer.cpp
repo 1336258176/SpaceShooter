@@ -24,6 +24,17 @@ void Renderer::renderTextureEx(SDL_Texture* texture,
   SDL_RenderCopyEx(renderer_.get(), texture, NULL, &dst, angle, center, filp);
 }
 
+void Renderer::renderText(TTF_Font* font,
+                          const std::string& text,
+                          SDL_Color color,
+                          const SDL_FPoint& dst) {
+  SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_.get(), surface);
+  renderTexture(texture, dst, surface->w, surface->h);
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
+}
+
 SDL_Renderer* Renderer::get() { return renderer_.get(); }
 
 void Renderer::present() { SDL_RenderPresent(get()); }

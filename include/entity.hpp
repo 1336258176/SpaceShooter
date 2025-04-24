@@ -35,8 +35,8 @@ inline const char* ShieldItemTexturePath = "assets/image/bonus_shield.png";
 inline const char* NearStarBackgroundPath = "assets/image/Stars-A.png";
 inline const char* FarStarBackgroundPath = "assets/image/Stars-B.png";
 inline const char* HPUITexturePath = "assets/image/Health UI Black.png";
-inline const char* Font1Path = "assets/font/VonwaonBitmap-12px.ttf";
-inline const char* Font2Path = "assets/font/VonwaonBitmap-16px.ttf";
+inline const char* TextFontPath = "assets/font/VonwaonBitmap-12px.ttf";
+inline const char* TitleFontPath = "assets/font/VonwaonBitmap-16px.ttf";
 
 struct TextureDeleter {
   void operator()(SDL_Texture* texture) const {

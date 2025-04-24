@@ -39,8 +39,6 @@ class GameScene : public SceneBase {
   std::mt19937 gen_;
   std::uniform_real_distribution<float> dis_;
 
-  std::unique_ptr<TTF_Font, TTFDeleter> ttf_font_{nullptr, TTFDeleter{}};
-
   Player player_;
   Enemy enemy_tmp_;
   PlayerBullet player_bullet_tmp_;

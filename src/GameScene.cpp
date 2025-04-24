@@ -7,9 +7,6 @@ void GameScene::init() {
   gen_ = std::mt19937(rd());
   dis_ = std::uniform_real_distribution<float>(0.f, 1.f);
 
-  // load font
-  ttf_font_.reset(TTF_OpenFont(Font1Path, 20));
-
   // player
   player_.setTexture(IMG_LoadTexture(game.getRenderer(), PlayerTexturePath));
   if (!player_.texture) {
@@ -158,15 +155,8 @@ void GameScene::render() {
   
   // UI-Score
   std::string text = "Score: " + std::to_string(score_);
-  SDL_Surface* surface =
-      TTF_RenderText_Blended(ttf_font_.get(), text.c_str(), {255, 255, 255, 255});
-  SDL_Texture* texture = SDL_CreateTextureFromSurface(game.getRenderer(), surface);
-  int w, h;
-  SDL_QueryTexture(texture, NULL, NULL, &w, &h);
   SDL_FPoint pos = {game.getWindowWidth() * 4.5f / 6.0f, 10.f};
-  game.renderer_.renderTexture(texture, pos, w, h);
-  SDL_FreeSurface(surface);
-  SDL_DestroyTexture(texture);
+  game.renderer_.renderText(game.getTextFont(), text, {255,255,255,255}, pos);
 }
 
 GameScene::~GameScene() { quit(); }

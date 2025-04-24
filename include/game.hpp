@@ -12,7 +12,7 @@
 class Game final {
  public:
   enum GameState { Start, Running, GameOver };
-  GameState state;
+  GameState state_;
 
   Game &operator=(const Game &) = delete;
   Game(const Game &) = delete;
@@ -32,6 +32,9 @@ class Game final {
   int getWindowWidth() const;
   int getFPS() const;
 
+  TTF_Font* getTitleFont() const;
+  TTF_Font* getTextFont() const;
+
   Windows window_;
   Renderer renderer_;
 
@@ -44,11 +47,15 @@ class Game final {
   BackGround nearStar;
   BackGround farStar;
 
-  bool shouldColse = false;
+  std::unique_ptr<TTF_Font, TTFDeleter> title_font_{nullptr, TTFDeleter{} };
+  std::unique_ptr<TTF_Font, TTFDeleter> text_font_{nullptr, TTFDeleter{} };
+
+  bool shouldColse_ = false;
   const Uint32 FPS = 60;
   const Uint32 frameTime_ = 1000 / FPS;  // ms
   float deltaTime_ = 0.f;  // The time(s) difference between this frame and the previous frame
   std::unique_ptr<SceneBase> currentScene_;
+
   static std::unique_ptr<Game> instance_;
 };
 

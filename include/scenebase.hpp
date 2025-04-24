@@ -16,7 +16,7 @@ class SceneBase {
   virtual void handleEvent(const SDL_Event& event) = 0;
   virtual void quit() = 0;
 
- protected:
+ protected: // subclasses can access it
   Game& game;
 };
 
