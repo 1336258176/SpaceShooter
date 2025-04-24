@@ -22,11 +22,6 @@ void Game::init() {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf init error: %s", TTF_GetError());
   }
 
-  if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
-    shouldColse_ = true;
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_mixer init error: %s", Mix_GetError());
-  }
-
   // create and init scene
   state_ = GameState::Start;
   currentScene_ = std::make_unique<StartScene>();
@@ -61,8 +56,6 @@ void Game::init() {
 void Game::quit() {
   instance_.reset();
   TTF_Quit();
-  Mix_CloseAudio();
-  Mix_Quit();
   IMG_Quit();
   SDL_Quit();
 }
