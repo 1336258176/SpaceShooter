@@ -242,9 +242,10 @@ void GameScene::enemyShoot(Enemy& enemy) {
 }
 
 void GameScene::updatePlayer(float deltaTime) {
-  if (player_.health <= 0) {
+  if (player_.health <= 0 && !isDead_) {
     isDead_ = true;
     addExplosion(player_);
+    return;
   }
   keyboardControl(deltaTime);
   for (auto it = enemies_.begin(); it != enemies_.end();) {
