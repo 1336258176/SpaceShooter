@@ -10,5 +10,6 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <unordered_map>
 
 #endif  // PRECOMPILE_HPP__

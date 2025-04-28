@@ -15,6 +15,13 @@ class EndScene : public SceneBase {
   void quit() override;
 
  private:
+  void renderScoreList();
+  void renderGameOver();
+
+  bool isTyping_ = true;
+  std::string name_ = "";
+  const std::string underline_ = "______";
+  std::unordered_map<std::string, int> scores_;
 };
 
 #endif  // ENDSCENE_HPP__

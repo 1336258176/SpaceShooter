@@ -160,7 +160,7 @@ void GameScene::render() {
   SDL_SetTextureColorMod(ui_tmp_.getTexture(), 255, 255, 255);
 
   // UI-Score
-  std::string text = "Score: " + std::to_string(score_);
+  std::string text = "SCORE: " + std::to_string(score_);
   SDL_FPoint pos = {game.getWindowWidth() * 4.5f / 6.0f, 10.f};
   game.renderer_.renderText(game.getTextFont(), text, {255, 255, 255, 255}, pos);
 }
@@ -255,6 +255,7 @@ void GameScene::updatePlayer(float deltaTime) {
   if (player_.health <= 0 && !isDead_) {
     isDead_ = true;
     addExplosion(player_);
+    game.setScore(score_);
     return;
   }
   keyboardControl(deltaTime);

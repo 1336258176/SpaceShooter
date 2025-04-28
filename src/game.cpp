@@ -5,6 +5,8 @@ std::unique_ptr<Game> Game::instance_ = nullptr;
 Game::Game(Windows&& window, Renderer&& renderer) :
     window_(std::move(window)), renderer_(std::move(renderer)) {}
 
+Game::~Game() { quit(); }
+
 void Game::init() {
   // int SDL
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -96,6 +98,12 @@ int Game::getFPS() const { return static_cast<int>(FPS); }
 TTF_Font* Game::getTitleFont() const { return title_font_.get(); }
 
 TTF_Font* Game::getTextFont() const { return text_font_.get(); }
+
+void Game::setScore(int score) { score_ = score; }
+
+int Game::getScore() const { return score_; }
+
+void Game::close() { shouldColse_ = true; }
 
 void Game::run() {
   while (!shouldColse_) {

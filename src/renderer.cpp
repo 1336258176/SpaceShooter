@@ -24,12 +24,30 @@ void Renderer::renderTextureEx(SDL_Texture* texture,
   SDL_RenderCopyEx(renderer_.get(), texture, NULL, &dst, angle, center, filp);
 }
 
+/**
+ * @brief 渲染文本
+ *
+ * @param font 目标字体
+ * @param text 文本
+ * @param color 颜色
+ * @param dst 目标位置
+ * @param hc 水平居中
+ * @param vc 竖直居中
+ */
 void Renderer::renderText(TTF_Font* font,
                           const std::string& text,
                           SDL_Color color,
-                          const SDL_FPoint& dst) {
+                          SDL_FPoint& dst,
+                          bool hc,
+                          bool vc) {
   SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_.get(), surface);
+  if (hc) {
+    dst.x = (Windows::WindowsWidth - surface->w) / 2.f;
+  }
+  if (vc) {
+    dst.y = (Windows::WindowsHeight - surface->h) / 2.f;
+  }
   renderTexture(texture, dst, surface->w, surface->h);
   SDL_FreeSurface(surface);
   SDL_DestroyTexture(texture);

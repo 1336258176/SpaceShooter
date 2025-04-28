@@ -18,18 +18,31 @@ void StartScene::render() {
   game.renderer_.renderText(game.getTitleFont(),
                             title_text_,
                             {255, 255, 255, 255},
-                            title_text_pos_);
+                            title_text_pos_,
+                            true,
+                            false);
   if (timer_ > 0.5f) {
     game.renderer_.renderText(game.getTextFont(),
                               start_game_text_,
                               {255, 255, 255, 255},
-                              start_game_text_pos_);
+                              start_game_text_pos_,
+                              true,
+                              false);
   }
 }
 
 void StartScene::handleEvent(const SDL_Event& event) {
-  if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_J) {
-    game.changeScene(Game::GameState::Running);
+  if (event.type == SDL_KEYDOWN) {
+    switch (event.key.keysym.scancode) {
+      case SDL_SCANCODE_J:
+        game.changeScene(Game::GameState::Running);
+        break;
+      case SDL_SCANCODE_ESCAPE:
+        game.close();
+        break;
+      default:
+        break;
+    }
   }
 }
 
