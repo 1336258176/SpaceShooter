@@ -32,10 +32,12 @@ class GameScene : public SceneBase {
   void spawnEnemy();
   void addExplosion(const Object &obj);
   void updateExplosions();
+  void changeSceneDelay(float deltaTime, float delayTime);
 
  private:
   int score_ = 0;
   bool isDead_ = false;
+  float timer_ = 0.f;
   std::mt19937 gen_;
   std::uniform_real_distribution<float> dis_;
 

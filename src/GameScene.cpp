@@ -98,6 +98,12 @@ void GameScene::update(float deltaTime) {
   updateEnemyBullets(deltaTime);
 
   updateExplosions();
+
+  // It cannot be placed at the beginning of the update function,
+  // as it will cause member functions to access deleted objects.
+  if (isDead_) {
+    changeSceneDelay(deltaTime, 1.5f);
+  }
 }
 
 void GameScene::render() {
@@ -152,16 +158,20 @@ void GameScene::render() {
     game.renderer_.renderTexture(ui_tmp_.getTexture(), dst_pos, ui_tmp_.width, ui_tmp_.height);
   }
   SDL_SetTextureColorMod(ui_tmp_.getTexture(), 255, 255, 255);
-  
+
   // UI-Score
   std::string text = "Score: " + std::to_string(score_);
   SDL_FPoint pos = {game.getWindowWidth() * 4.5f / 6.0f, 10.f};
-  game.renderer_.renderText(game.getTextFont(), text, {255,255,255,255}, pos);
+  game.renderer_.renderText(game.getTextFont(), text, {255, 255, 255, 255}, pos);
 }
 
 GameScene::~GameScene() { quit(); }
 
-void GameScene::handleEvent(const SDL_Event& event) {}
+void GameScene::handleEvent(const SDL_Event& event) {
+  if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+    game.changeScene(Game::GameState::Start);
+  }
+}
 
 void GameScene::quit() {}
 
@@ -411,5 +421,12 @@ void GameScene::updateExplosions() {
     } else {
       it++;
     }
+  }
+}
+
+void GameScene::changeSceneDelay(float deltaTime, float delayTime) {
+  timer_ += deltaTime;
+  if (timer_ > delayTime) {
+    game.changeScene(Game::GameState::GameOver);
   }
 }

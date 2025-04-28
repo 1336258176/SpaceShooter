@@ -4,7 +4,8 @@
 
 void EndScene::init() {}
 
-void EndScene::update(float deltaTime) {}
+void EndScene::update(float deltaTime) {
+}
 
 void EndScene::render() {}
 
