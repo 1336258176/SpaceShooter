@@ -1,5 +1,9 @@
 # SpaceShooter
 
+## brief
+
+A game written using SDL2.
+
 ## run
 
 ```bash
