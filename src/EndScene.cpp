@@ -9,6 +9,8 @@ void EndScene::init() {
       SDL_LogError(SDL_LOG_CATEGORY_ERROR, "EndScene: start text input error");
     }
   }
+
+  loadData();
 }
 
 void EndScene::update(float deltaTime) {}
@@ -50,11 +52,63 @@ void EndScene::renderGameOver() {
   }
 }
 
+void EndScene::saveData() {
+  std::ofstream of("assets/save.dat");
+  if (!of.is_open()) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "EndScene: save data error");
+  }
+  for (const auto [name, score] : scores_) {
+    of << name << " " << score << std::endl;
+  }
+}
+
+void EndScene::loadData() {
+  if (!std::filesystem::exists("assets/save.dat")) {
+    return;
+  }
+  std::ifstream data("assets/save.dat");
+  if (!data.is_open()) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "EndScene: load data error");
+  }
+  scores_.clear();
+  int score;
+  std::string name;
+  while (data >> name >> score) {
+    if (scores_.count(name)) {
+      if (score > scores_[name]) scores_[name] = score;
+    } else
+      scores_[name] = score;
+  }
+}
+
 void EndScene::renderScoreList() {
   std::string title = "Score List";
   SDL_FPoint title_pos = {0.f, game.getWindowHeight() / 8.f};
   game.renderer_
       .renderText(game.getTitleFont(), title, {255, 255, 255, 255}, title_pos, true, false);
+
+  SDL_FPoint text_base = {0.f, title_pos.y + 50.f};
+  float offset_y = 40.f;
+  int count = 0;
+  char text[256];
+  const char* fmt = "%d.%6s                   %4d";
+  for (const auto& player : sorted_scores_) {
+    count++;
+    snprintf(text, sizeof(text), fmt, count, player.first.c_str(), player.second);
+    SDL_FPoint text_pos = {0.f, text_base.y + count * offset_y};
+    game.renderer_
+        .renderText(game.getTextFont(), text, {255, 255, 255, 255}, text_pos, true, false);
+    if (count >= 8) break;
+  }
+
+  std::string restart_text = "Press Enter to restart the game.";
+  SDL_FPoint restart_text_pos = {0.f, title_pos.y + 500.f};
+  game.renderer_.renderText(game.getTextFont(),
+                            restart_text,
+                            {255, 255, 255, 255},
+                            restart_text_pos,
+                            true,
+                            false);
 }
 
 void EndScene::handleEvent(const SDL_Event& event) {
@@ -73,6 +127,17 @@ void EndScene::handleEvent(const SDL_Event& event) {
           if (!name_.empty()) {
             isTyping_ = false;
             SDL_StopTextInput();
+            if (scores_.count(name_)) {
+              if (game.getScore() > scores_[name_]) scores_[name_] = game.getScore();
+            } else
+              scores_[name_] = game.getScore();
+            sorted_scores_ =
+                std::move(std::vector<std::pair<std::string, int>>(scores_.begin(), scores_.end()));
+            std::sort(sorted_scores_.begin(),
+                      sorted_scores_.end(),
+                      [](const auto& a, const auto& b) {
+                        return a.second > b.second;
+                      });
           }
           break;
 
@@ -91,4 +156,4 @@ void EndScene::handleEvent(const SDL_Event& event) {
   }
 }
 
-void EndScene::quit() {}
+void EndScene::quit() { saveData(); }

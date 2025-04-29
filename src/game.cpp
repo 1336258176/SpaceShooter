@@ -63,6 +63,7 @@ void Game::quit() {
 }
 
 void Game::changeScene(GameState next_game_state) {
+  currentScene_->quit();
   if (next_game_state == GameState::Start) {
     currentScene_.reset(new StartScene());
   } else if (next_game_state == GameState::Running) {

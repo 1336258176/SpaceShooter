@@ -18,10 +18,14 @@ class EndScene : public SceneBase {
   void renderScoreList();
   void renderGameOver();
 
+  void saveData();
+  void loadData();
+
   bool isTyping_ = true;
   std::string name_ = "";
   const std::string underline_ = "______";
   std::unordered_map<std::string, int> scores_;
+  std::vector<std::pair<std::string, int>> sorted_scores_;
 };
 
 #endif  // ENDSCENE_HPP__

@@ -6,7 +6,10 @@
 #include <SDL_ttf.h>
 
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <list>
+#include <map>
 #include <memory>
 #include <random>
 #include <string>
