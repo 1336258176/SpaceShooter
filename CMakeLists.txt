@@ -7,7 +7,7 @@ set(SDL_ROOT "" CACHE PATH "SDL root directory")
 set(SDL_image_ROOT "" CACHE PATH "SDL_image root directory")
 set(SDL_ttf_ROOT "" CACHE PATH "SDL_ttf root director")
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(SDL2 REQUIRED PATHS "${SDL_ROOT}/cmake")
 find_package(SDL2_image REQUIRED PATHS "${SDL_image_ROOT}/cmake")
