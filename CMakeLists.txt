@@ -3,6 +3,8 @@ project(SpaceShooter VERSION 0.1.0 LANGUAGES C CXX)
 
 include("${CMAKE_SOURCE_DIR}/cmake/CopyDLL.cmake")
 
+add_subdirectory(3rdlibs)
+
 set(SDL_ROOT "" CACHE PATH "SDL root directory")
 set(SDL_image_ROOT "" CACHE PATH "SDL_image root directory")
 set(SDL_ttf_ROOT "" CACHE PATH "SDL_ttf root director")
@@ -22,13 +24,13 @@ set(target ${PROJECT_NAME}-${CMAKE_SYSTEM_NAME})
 # else()
 # add_compile_options(-Wall -Wextra -Wpedantic)
 # endif()
-
 aux_source_directory(./src SRC)
 message(STATUS "find src files: ${SRC}")
 file(GLOB header_files ./include/*.hpp)
 message(STATUS "find header files: ${header_files}")
 
 add_executable(${target} ${SRC} ${header_files})
+target_link_libraries(${target} PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 target_include_directories(${target} PRIVATE include)
 target_link_libraries(${target} PRIVATE
     ${SDL2_LIBRARIES}

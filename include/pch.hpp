@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <spdlog/spdlog.h>
 
 #include <cmath>
 #include <filesystem>
