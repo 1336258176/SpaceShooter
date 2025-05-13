@@ -3,10 +3,11 @@
 #include "game.hpp"
 
 void EndScene::init() {
+  game.logger_->info("end-scene init");
   if (!SDL_IsTextInputActive()) {
     SDL_StartTextInput();
     if (!SDL_IsTextInputActive()) {
-      SDL_LogError(SDL_LOG_CATEGORY_ERROR, "EndScene: start text input error");
+      game.logger_->error("EndScene: start text input error");
     }
   }
 
@@ -55,7 +56,7 @@ void EndScene::renderGameOver() {
 void EndScene::saveData() {
   std::ofstream of("assets/save.dat");
   if (!of.is_open()) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "EndScene: save data error");
+    game.logger_->error("EndScene: save data error");
   }
   for (const auto [name, score] : scores_) {
     of << name << " " << score << std::endl;
@@ -64,11 +65,12 @@ void EndScene::saveData() {
 
 void EndScene::loadData() {
   if (!std::filesystem::exists("assets/save.dat")) {
+    game.logger_->warn("The save does not exist");
     return;
   }
   std::ifstream data("assets/save.dat");
   if (!data.is_open()) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "EndScene: load data error");
+    game.logger_->error("EndScene: load data error");
   }
   scores_.clear();
   int score;
@@ -156,4 +158,8 @@ void EndScene::handleEvent(const SDL_Event& event) {
   }
 }
 
-void EndScene::quit() { saveData(); }
+void EndScene::quit() {
+  game.logger_->info("save data");
+  saveData();
+  game.logger_->info("end-scene quit");
+}

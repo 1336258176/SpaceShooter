@@ -1,6 +1,7 @@
 build/
 .vscode/
 assets/save.dat
+log/
 
 *.pdb
 

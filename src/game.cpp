@@ -5,53 +5,79 @@ std::unique_ptr<Game> Game::instance_ = nullptr;
 Game::Game(Windows&& window, Renderer&& renderer) :
     window_(std::move(window)), renderer_(std::move(renderer)) {}
 
-Game::~Game() { quit(); }
+Game::~Game() {
+  logger_->warn("game quit");
+  quit();
+}
 
 void Game::init() {
+  // set output logger
+  auto now = std::chrono::system_clock::now();
+  auto now_time_t = std::chrono::system_clock::to_time_t(now);
+  std::tm now_tm;
+  localtime_s(&now_tm, &now_time_t);
+  std::string log_path = fmt::format("log/{}-{}-{}_{}-{}-{}.log",
+                                     now_tm.tm_year + 1900,
+                                     now_tm.tm_mon + 1,
+                                     now_tm.tm_mday,
+                                     now_tm.tm_hour,
+                                     now_tm.tm_min,
+                                     now_tm.tm_sec);
+  logger_ = spdlog::basic_logger_mt("Game", log_path);
+  logger_->set_level(spdlog::level::trace);
+
   // int SDL
+  logger_->info("init SDL");
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     shouldColse_ = true;
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL init error: %s", SDL_GetError());
+    logger_->error("SDL init error: {}", SDL_GetError());
   }
 
   if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
     shouldColse_ = true;
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image init error: %s", IMG_GetError());
+    logger_->error("SDL_image init error: {}", IMG_GetError());
   }
 
   if (TTF_Init() != 0) {
     shouldColse_ = true;
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf init error: %s", TTF_GetError());
+    logger_->error("SDL_ttf init error: {}", TTF_GetError());
   }
 
+  // read config
+  logger_->info("read config file");
+  parseConfigFile("config/config.toml");
+
   // create and init scene
+  logger_->info("create and init scene");
   state_ = GameState::Start;
   currentScene_ = std::make_unique<StartScene>();
   currentScene_->init();
 
   // load background texture
-  nearStar.setTexture(IMG_LoadTexture(renderer_.get(), NearStarBackgroundPath));
+  logger_->info("load background texture");
+  nearStar.setTexture(IMG_LoadTexture(renderer_.get(), NearStarBackgroundPath.c_str()));
   if (!nearStar.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load near-star background texture error");
+    logger_->error("SDL_image load near-star background texture error");
   }
   SDL_QueryTexture(nearStar.getTexture(), NULL, NULL, &nearStar.width, &nearStar.height);
   nearStar.speed = NearBackgroundSpeed;
 
-  farStar.setTexture(IMG_LoadTexture(renderer_.get(), FarStarBackgroundPath));
+  farStar.setTexture(IMG_LoadTexture(renderer_.get(), FarStarBackgroundPath.c_str()));
   if (!farStar.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load far-star background texture error");
+    logger_->error("SDL_image load far-star background texture error");
   }
   SDL_QueryTexture(farStar.getTexture(), NULL, NULL, &farStar.width, &farStar.height);
   farStar.speed = FarBackgroundSpeed;
 
   // load font
-  title_font_.reset(TTF_OpenFont(TitleFontPath, 80));
+  logger_->info("load font");
+  title_font_.reset(TTF_OpenFont(TitleFontPath.c_str(), 80));
   if (!title_font_) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf open title font error");
+    logger_->error("SDL_ttf open title font error");
   }
-  text_font_.reset(TTF_OpenFont(TextFontPath, 20));
+  text_font_.reset(TTF_OpenFont(TextFontPath.c_str(), 20));
   if (!text_font_) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_ttf open text font error");
+    logger_->error("SDL_ttf open text font error");
   }
 }
 
@@ -63,6 +89,7 @@ void Game::quit() {
 }
 
 void Game::changeScene(GameState next_game_state) {
+  logger_->info("change scene!");
   currentScene_->quit();
   if (next_game_state == GameState::Start) {
     currentScene_.reset(new StartScene());
@@ -71,7 +98,7 @@ void Game::changeScene(GameState next_game_state) {
   } else if (next_game_state == GameState::GameOver) {
     currentScene_.reset(new EndScene());
   } else {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Error game state!");
+    logger_->error("Error game state!");
   }
   state_ = next_game_state;
   currentScene_->init();

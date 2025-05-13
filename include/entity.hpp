@@ -3,40 +3,40 @@
 
 #include "pch.hpp"
 
-constexpr int PlayerMaxHP = 3;
-constexpr int EnemyMaxHP = 2;
-constexpr int PlayerBulletDamage = 1;
-constexpr int EnemyBulletDamage = 1;
-constexpr int ItemCollisionCount = 3;
+inline int PlayerMaxHP;
+inline int PlayerBulletDamage;
+inline int PlayerSpeed;
+inline int PlayerBulletSpeed;
+inline int PlayerShootCooldown;
 
-constexpr int PlayerSpeed = 300;
-constexpr int PlayerBulletSpeed = 600;
-constexpr int PlayerShootCooldown = 300;
-constexpr int EnemySpeed = 200;
-constexpr int EnemyBulletSpeed = 400;
-constexpr int EnemyShootCooldown = 2000;
-constexpr int ItemSpeed = 200;
+inline int EnemyMaxHP;
+inline int EnemyBulletDamage;
+inline int EnemySpeed;
+inline int EnemyBulletSpeed;
+inline int EnemyShootCooldown;
 
-constexpr int NearBackgroundSpeed = 90;
-constexpr int FarBackgroundSpeed = 30;
+inline int ItemCollisionCount;
+inline int ItemSpeed;
+inline int NearBackgroundSpeed;
+inline int FarBackgroundSpeed;
+inline float GenerateLifeItemProbability;
+inline int DefeatEnemyPoints;
+inline int CollideEnemyCosts;
 
-constexpr float GenerateLifeItemProbability = 0.2f;
-constexpr int DefeatEnemyPoints = 5;
-constexpr int CollideEnemyCosts = 5;
+inline std::string PlayerTexturePath;
+inline std::string PlayerBulletTexturePath;
+inline std::string EnemyTexturePath;
+inline std::string EnemyBulletTexturePath;
+inline std::string ExplosionTexturePath;
+inline std::string LifeItemTexturePath;
+inline std::string TimeItemTexturePath;
+inline std::string ShieldItemTexturePath;
+inline std::string NearStarBackgroundPath;
+inline std::string FarStarBackgroundPath;
+inline std::string HPUITexturePath;
 
-inline const char* PlayerTexturePath = "assets/image/SpaceShip.png";
-inline const char* PlayerBulletTexturePath = "assets/image/laser-1.png";
-inline const char* EnemyTexturePath = "assets/image/insect-2.png";
-inline const char* EnemyBulletTexturePath = "assets/image/bullet-1.png";
-inline const char* ExplosionTexturePath = "assets/effect/explosion.png";
-inline const char* LifeItemTexturePath = "assets/image/bonus_life.png";
-inline const char* TimeItemTexturePath = "assets/image/bonus_time.png";
-inline const char* ShieldItemTexturePath = "assets/image/bonus_shield.png";
-inline const char* NearStarBackgroundPath = "assets/image/Stars-A.png";
-inline const char* FarStarBackgroundPath = "assets/image/Stars-B.png";
-inline const char* HPUITexturePath = "assets/image/Health UI Black.png";
-inline const char* TextFontPath = "assets/font/VonwaonBitmap-12px.ttf";
-inline const char* TitleFontPath = "assets/font/VonwaonBitmap-16px.ttf";
+inline std::string TextFontPath;
+inline std::string TitleFontPath;
 
 struct TextureDeleter {
   void operator()(SDL_Texture* texture) const {
@@ -118,5 +118,7 @@ struct BackGround : public Object {
 struct HPUI : public Object {
   float offset = 0.f;
 };
+
+void parseConfigFile(std::string_view file_path);
 
 #endif  // ENTITY_HPP__

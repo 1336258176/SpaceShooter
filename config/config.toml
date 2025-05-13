@@ -1,0 +1,39 @@
+[Player]
+MaxHP = 3
+BulletDamage = 1
+Speed = 300
+BulletSpeed = 600
+ShootCooldown = 300
+
+[Enemy]
+MaxHP = 2
+BulletDamage = 1
+Speed = 200
+BulletSpeed = 400
+ShootCooldown = 2000
+
+[GameConfig]
+GenerateLifeItemProbability = 0.2
+DefeatEnemyPoints = 5
+CollideEnemyCosts = 5
+ItemSpeed = 200
+ItemCollisionCount = 3
+NearBackgroundSpeed = 90
+FarBackgroundSpeed = 30
+
+[Texture]
+Player = "assets/image/SpaceShip.png"
+PlayerBullet = "assets/image/laser-1.png"
+Enemy = "assets/image/insect-2.png"
+EnemyBullet = "assets/image/bullet-1.png"
+Explosion = "assets/effect/explosion.png"
+LifeItem = "assets/image/bonus_life.png"
+TimeItem = "assets/image/bonus_time.png"
+ShieldItem = "assets/image/bonus_shield.png"
+NearStarBackground = "assets/image/Stars-A.png"
+FarStarBackground = "assets/image/Stars-B.png"
+HPUI = "assets/image/Health UI Black.png"
+
+[Font]
+TextFont = "assets/font/VonwaonBitmap-12px.ttf"
+TitleFont = "assets/font/VonwaonBitmap-16px.ttf"

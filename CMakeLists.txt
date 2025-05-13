@@ -19,25 +19,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR})
 set(target ${PROJECT_NAME}-${CMAKE_SYSTEM_NAME})
 
-# if(MSVC)
-# add_compile_options(/W4)
-# else()
-# add_compile_options(-Wall -Wextra -Wpedantic)
-# endif()
 aux_source_directory(./src SRC)
 message(STATUS "find src files: ${SRC}")
 file(GLOB header_files ./include/*.hpp)
 message(STATUS "find header files: ${header_files}")
 
 add_executable(${target} ${SRC} ${header_files})
-target_link_libraries(${target} PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 target_include_directories(${target} PRIVATE include)
+target_link_libraries(${target} PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+target_link_libraries(${target} PRIVATE toml++)
 target_link_libraries(${target} PRIVATE
     ${SDL2_LIBRARIES}
     SDL2_image::SDL2_image
     SDL2_ttf::SDL2_ttf)
 target_compile_features(${target} PRIVATE cxx_std_17)
 target_precompile_headers(${target} PRIVATE ./include/pch.hpp)
+target_compile_definitions(${target} PRIVATE "PROJECT_DIR=\"${CMAKE_SOURCE_DIR}\"")
 
 CopyDLL(${target} "SDL2.dll")
 CopyDLL(${target} "SDL2_image.dll")

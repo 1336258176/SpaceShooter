@@ -6,7 +6,7 @@
 class EndScene : public SceneBase {
  public:
   EndScene() = default;
-  ~EndScene() = default;
+  ~EndScene() { quit(); };
 
   void init() override;
   void update(float deltaTime) override;

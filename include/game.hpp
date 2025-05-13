@@ -13,7 +13,7 @@ class Game final {
  public:
   enum GameState { Start, Running, GameOver };
   GameState state_;
-  
+
   Game &operator=(const Game &) = delete;
   Game(const Game &) = delete;
   ~Game();
@@ -34,8 +34,8 @@ class Game final {
   int getWindowHeight() const;
   int getWindowWidth() const;
   int getFPS() const;
-  TTF_Font* getTitleFont() const;
-  TTF_Font* getTextFont() const;
+  TTF_Font *getTitleFont() const;
+  TTF_Font *getTextFont() const;
   int getScore() const;
   void close();
 
@@ -51,8 +51,8 @@ class Game final {
   BackGround nearStar;
   BackGround farStar;
 
-  std::unique_ptr<TTF_Font, TTFDeleter> title_font_{nullptr, TTFDeleter{} };
-  std::unique_ptr<TTF_Font, TTFDeleter> text_font_{nullptr, TTFDeleter{} };
+  std::unique_ptr<TTF_Font, TTFDeleter> title_font_{nullptr, TTFDeleter{}};
+  std::unique_ptr<TTF_Font, TTFDeleter> text_font_{nullptr, TTFDeleter{}};
 
   bool shouldColse_ = false;
   int score_ = 0;
@@ -62,6 +62,9 @@ class Game final {
   std::unique_ptr<SceneBase> currentScene_;
 
   static std::unique_ptr<Game> instance_;
+
+ public:
+  std::shared_ptr<spdlog::logger> logger_;
 };
 
 #endif  // GAME_HPP__

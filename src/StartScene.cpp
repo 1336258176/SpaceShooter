@@ -3,6 +3,7 @@
 #include "game.hpp"
 
 void StartScene::init() {
+  game.logger_->info("start-scene init");
   title_text_pos_ = {game.getWindowWidth() / 12.f, game.getWindowHeight() / 3.5f};
   start_game_text_pos_ = {game.getWindowWidth() / 5.f, game.getWindowHeight() * 2.f / 3.f};
 }
@@ -46,4 +47,4 @@ void StartScene::handleEvent(const SDL_Event& event) {
   }
 }
 
-void StartScene::quit() {}
+void StartScene::quit() { game.logger_->info("start-scene quit"); }

@@ -3,14 +3,16 @@
 #include "game.hpp"
 
 void GameScene::init() {
+  game.logger_->info("game-scene init");
+
   std::random_device rd;
   gen_ = std::mt19937(rd());
   dis_ = std::uniform_real_distribution<float>(0.f, 1.f);
 
   // player
-  player_.setTexture(IMG_LoadTexture(game.getRenderer(), PlayerTexturePath));
+  player_.setTexture(IMG_LoadTexture(game.getRenderer(), PlayerTexturePath.c_str()));
   if (!player_.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load player texture error.");
+    game.logger_->error("SDL_image load player texture error.");
   }
   SDL_QueryTexture(player_.getTexture(), NULL, NULL, &player_.width, &player_.height);
   player_.width /= 4;
@@ -19,9 +21,10 @@ void GameScene::init() {
   player_.pos.y = static_cast<float>(game.getWindowHeight() - player_.height);
 
   // player bullet
-  player_bullet_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), PlayerBulletTexturePath));
+  player_bullet_tmp_.setTexture(
+      IMG_LoadTexture(game.getRenderer(), PlayerBulletTexturePath.c_str()));
   if (!player_bullet_tmp_.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load player bullet texture error.");
+    game.logger_->error("SDL_image load player bullet texture error.");
   }
   SDL_QueryTexture(player_bullet_tmp_.getTexture(),
                    NULL,
@@ -32,18 +35,18 @@ void GameScene::init() {
   player_bullet_tmp_.height /= 4;
 
   // enemy
-  enemy_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), EnemyTexturePath));
+  enemy_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), EnemyTexturePath.c_str()));
   if (!enemy_tmp_.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load enemy texture error.");
+    game.logger_->error("SDL_image load enemy texture error.");
   }
   SDL_QueryTexture(enemy_tmp_.getTexture(), NULL, NULL, &enemy_tmp_.width, &enemy_tmp_.height);
   enemy_tmp_.width /= 4;
   enemy_tmp_.height /= 4;
 
   // enemy bullet
-  enemy_bullet_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), EnemyBulletTexturePath));
+  enemy_bullet_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), EnemyBulletTexturePath.c_str()));
   if (!enemy_bullet_tmp_.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load enemy bullet texture error.");
+    game.logger_->error("SDL_image load enemy bullet texture error.");
   }
   SDL_QueryTexture(enemy_bullet_tmp_.getTexture(),
                    NULL,
@@ -54,9 +57,9 @@ void GameScene::init() {
   enemy_bullet_tmp_.height /= 4;
 
   // explosion
-  explosion_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), ExplosionTexturePath));
+  explosion_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), ExplosionTexturePath.c_str()));
   if (!explosion_tmp_.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load explosion texture error.");
+    game.logger_->error("SDL_image load explosion texture error.");
   }
   SDL_QueryTexture(explosion_tmp_.getTexture(),
                    NULL,
@@ -67,9 +70,9 @@ void GameScene::init() {
   explosion_tmp_.width = explosion_tmp_.height;
 
   // item
-  life_item_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), LifeItemTexturePath));
+  life_item_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), LifeItemTexturePath.c_str()));
   if (!life_item_tmp_.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load LifeItem texture error.");
+    game.logger_->error("SDL_image load LifeItem texture error.");
   }
   SDL_QueryTexture(life_item_tmp_.getTexture(),
                    NULL,
@@ -80,9 +83,9 @@ void GameScene::init() {
   life_item_tmp_.height /= 4;
 
   // UI
-  ui_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), HPUITexturePath));
+  ui_tmp_.setTexture(IMG_LoadTexture(game.getRenderer(), HPUITexturePath.c_str()));
   if (!ui_tmp_.texture) {
-    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_image load HP-UI texture error.");
+    game.logger_->error("SDL_image load HP-UI texture error.");
   }
   SDL_QueryTexture(ui_tmp_.getTexture(), NULL, NULL, &ui_tmp_.width, &ui_tmp_.height);
   ui_tmp_.offset = static_cast<float>(ui_tmp_.width);
@@ -165,7 +168,10 @@ void GameScene::render() {
   game.renderer_.renderText(game.getTextFont(), text, {255, 255, 255, 255}, pos);
 }
 
-GameScene::~GameScene() { quit(); }
+GameScene::~GameScene() {
+  game.logger_->info("game-scene quit");
+  quit();
+}
 
 void GameScene::handleEvent(const SDL_Event& event) {
   if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
