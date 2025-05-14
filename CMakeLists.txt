@@ -26,12 +26,10 @@ message(STATUS "find header files: ${header_files}")
 
 add_executable(${target} ${SRC} ${header_files})
 target_include_directories(${target} PRIVATE include)
-target_link_libraries(${target} PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
-target_link_libraries(${target} PRIVATE toml++)
-target_link_libraries(${target} PRIVATE
-    ${SDL2_LIBRARIES}
-    SDL2_image::SDL2_image
-    SDL2_ttf::SDL2_ttf)
+target_link_libraries(${target} PRIVATE vendor)
+target_link_libraries(${target} PRIVATE ${SDL2_LIBRARIES}
+                                        SDL2_image::SDL2_image
+                                        SDL2_ttf::SDL2_ttf)
 target_compile_features(${target} PRIVATE cxx_std_17)
 target_precompile_headers(${target} PRIVATE ./include/pch.hpp)
 target_compile_definitions(${target} PRIVATE "PROJECT_DIR=\"${CMAKE_SOURCE_DIR}\"")
